@@ -105,6 +105,7 @@ class ConnectionManager(metaclass=Singleton):
             return None
 
         self.db_cur.execute("DELETE FROM session WHERE session_key = ?", (key,))
+        self.db_con.commit()
 
     def session_exists(self, session_key: str):
         """Checks if the session with the provided key exists in the database."""
@@ -147,6 +148,7 @@ class ConnectionManager(metaclass=Singleton):
             return None
 
         self.db_cur.execute("DELETE FROM user WHERE user_id = ?", (user_id,))
+        self.db_con.commit()
     
     def user_exists(self, user_id: int):
         """Checks if the user with the provided user_id exists in the database."""
@@ -178,7 +180,7 @@ class ConnectionManager(metaclass=Singleton):
         """Returns all data from the database for the user with the provided id."""
 
         if self.user_exists(user_id) == False:
-            warnings.warn(f"User with id {id} does not exist. Returned data is empty.",skip_file_prefixes = _warn_skips)
+            warnings.warn(f"User with id {user_id} does not exist. Returned data is empty.",skip_file_prefixes = _warn_skips)
             return ()
 
         self.db_cur.execute("SELECT * FROM user WHERE user_id = ?", (user_id,))
@@ -240,6 +242,7 @@ class ConnectionManager(metaclass=Singleton):
             return None
 
         self.db_cur.execute("DELETE FROM connection WHERE connection_id = ?", (connection_id,))
+        self.db_con.commit()
 
 
 class DatabaseSetupException(Exception):

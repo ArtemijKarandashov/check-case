@@ -3,7 +3,7 @@ from flask import session, request
 from flask_socketio import emit
 from . import socketio
 
-con_manager = ConnectionManager()
+con_manager = ConnectionManager(db_path=None)
 
 @socketio.on('connect')
 def handle_connect():
