@@ -10,8 +10,9 @@
         <h1 id = "user_name">Logined us: My name</h1>
         <input id="session_key" type="text" placeholder="session key" />
 
-        <button onclick="join_session()">Join session</button>
+        <button onclick="joinSession()">Join session</button>
         <button onclick="createSession()">Create session</button>
+        <button onclick="processCheck()">Process check</button>
 
         <br>
         <h2 id = "session_data">Recived session data</h2>
@@ -43,13 +44,21 @@
                 message.textContent = `User ${data.name} connected to your session!`;
                 session_data.appendChild(message);
             });
+
+            socket.on('check', data => {
+                console.log(data)
+            });
     
             function createSession() {
                 socket.emit('create_session');
             }
             
-            function join_session() {
+            function joinSession() {
                 socket.emit('join_session', {session_key: session_key.value});
+            }
+
+            function processCheck(){
+                socket.emit('process_check');
             }
 
         </script>

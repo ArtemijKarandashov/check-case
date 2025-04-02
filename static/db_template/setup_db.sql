@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS user (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS session (
   session_id INTEGER PRIMARY KEY AUTOINCREMENT,
-  session_key TEXT NOT NULL UNIQUE
+  session_key TEXT NOT NULL UNIQUE,
+  status INT NOT NULL
 );
 
 -- -----------------------------------------------------

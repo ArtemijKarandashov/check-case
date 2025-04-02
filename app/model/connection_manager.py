@@ -63,18 +63,19 @@ class ConnectionManager(metaclass=Singleton):
             DatabaseSetupException: If template could not be found.
         """
 
-        with open(_path_to_db_template, 'r') as file:
+        try:
+            with open(_path_to_db_template, 'r') as file:
                 self.db_con = sqlite3.connect(db_path, check_same_thread=False)
                 self.db_cur = self.db_con.cursor()
                 sql_script = file.read()
                 self.db_cur.executescript(sql_script)
                 self.db_con.commit()
-        try:
-            pass
         except:
-            warnings.warn(f"Database setup failed. Database path: {db_path}",skip_file_prefixes = _warn_skips)
             raise DatabaseSetupException
-        
+    
+    def _reset_tables(self):
+        pass
+
     # --- Session methods ---
 
     def create_session(self):
@@ -91,20 +92,19 @@ class ConnectionManager(metaclass=Singleton):
 
             return None
 
-        self.db_cur.execute("INSERT INTO session VALUES(NULL,?)", (new_session.key,))
-        
+        self.db_cur.execute("INSERT INTO session VALUES(NULL,?,?)", (new_session.key,0,))
         self.db_con.commit()
 
         return new_session
 
-    def delete_session(self, key: int):
+    def delete_session(self, session_key: int):
         """Removes the session with the provided key from the database."""
 
-        if self.session_exists(key) == False:
-            warnings.warn(f"Session with key {key} does not exist. Nothing was deleted.",skip_file_prefixes = _warn_skips)
+        if self.session_exists(session_key) == False:
+            warnings.warn(f"Session with key {session_key} does not exist. Nothing was deleted.",skip_file_prefixes = _warn_skips)
             return None
 
-        self.db_cur.execute("DELETE FROM session WHERE session_key = ?", (key,))
+        self.db_cur.execute("DELETE FROM session WHERE session_key = ?", (session_key,))
         self.db_con.commit()
 
     def session_exists(self, session_key: str):
@@ -124,6 +124,34 @@ class ConnectionManager(metaclass=Singleton):
 
         self.db_cur.execute("SELECT user_id FROM connection WHERE session_key = ?", (session_key,))
         return list(map(lambda x: x[0], self.db_cur.fetchall()))
+
+    def get_session_data(self, session_key: str):
+        """smth smth i forgot"""
+
+        if not self.session_exists(session_key):
+            warnings.warn(f"Session with key {session_key} does not exist. Returned data is empty",skip_file_prefixes = _warn_skips)
+            return ()
+
+        self.db_cur.execute("SELECT * FROM session WHERE session_key = ?", (session_key,))
+        return self.db_cur.fetchone()
+    
+    def set_session_status(self, session_key: str, status: int):
+        """Updates session status"""
+
+        if status > 2:
+            warnings.warn(f"Wrong session status {status} provided for session {session_key}.",skip_file_prefixes = _warn_skips)
+            return None
+
+        if status < 0:
+            warnings.warn(f"Wrong session status {status} provided for session {session_key}. Status 0 will be used instaed.",skip_file_prefixes = _warn_skips)
+            status = 0
+
+        if not self.session_exists(session_key):
+            warnings.warn(f"Session with key {session_key} does not exist. Cannot update status",skip_file_prefixes = _warn_skips)
+            return ()    
+
+        self.db_cur.execute("UPDATE session SET status = ? WHERE session_key = ?", (status,session_key))
+        self.db_con.commit()
 
     # --- User methods ---
 
@@ -185,6 +213,16 @@ class ConnectionManager(metaclass=Singleton):
 
         self.db_cur.execute("SELECT * FROM user WHERE user_id = ?", (user_id,))
         return self.db_cur.fetchone()
+
+    def get_users_session(self, user_id: int):
+        """Returns user's current session"""
+        
+        if not self.user_exists(user_id):
+            warnings.warn(f"User with id {user_id} wasn't found in any session.",skip_file_prefixes = _warn_skips)
+            return None
+
+        self.db_cur.execute("SELECT session_key FROM connection WHERE user_id = ?", (user_id,))
+        return self.db_cur.fetchone()[0]
     
     def get_user_name(self, user_id: int):
         return self.get_user_data(user_id)[1]
