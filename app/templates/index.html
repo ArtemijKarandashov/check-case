@@ -7,6 +7,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
     </head>
     <body>
+        <button onclick="login()">Login</button><button onclick="logout()">Logout</button>
         <h1 id = "user_name">Logined us: My name</h1>
         <input id="session_key" type="text" placeholder="session key" />
 
@@ -28,7 +29,7 @@
                 console.log('Connected to WebSocket');
             });
     
-            socket.on('login', (data) => {
+            socket.on('login_success', (data) => {
                 console.log('Received:', data);
                 user_name.innerHTML = `Logined us: ${data.name}`;
             });
@@ -54,13 +55,20 @@
             }
             
             function joinSession() {
-                socket.emit('join_session', {session_key: session_key.value});
+                socket.emit('join_session', {"session_key": session_key.value});
             }
 
             function processCheck(){
                 socket.emit('process_check');
             }
+            
+            function login(){
+                socket.emit('login', {"name":''})
+            }
 
+            function logout(){
+                socket.emit('logout')
+            }
         </script>
     </body>
 </html>

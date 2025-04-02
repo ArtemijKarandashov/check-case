@@ -112,7 +112,7 @@ class ConnectionManager(metaclass=Singleton):
 
         self.db_cur.execute("SELECT session_key FROM session")
         existing_keys = list(map(lambda x: x[0], self.db_cur.fetchall()))
-
+        
         return session_key in existing_keys
 
     def get_users_in_session(self, session_key: str):
@@ -135,7 +135,7 @@ class ConnectionManager(metaclass=Singleton):
         self.db_cur.execute("SELECT * FROM session WHERE session_key = ?", (session_key,))
         return self.db_cur.fetchone()
     
-    def set_session_status(self, session_key: str, status: int):
+    def update_session_status(self, session_key: str, status: int):
         """Updates session status"""
 
         if status > 2:
@@ -223,7 +223,7 @@ class ConnectionManager(metaclass=Singleton):
 
         self.db_cur.execute("SELECT session_key FROM connection WHERE user_id = ?", (user_id,))
         return self.db_cur.fetchone()[0]
-    
+
     def get_user_name(self, user_id: int):
         return self.get_user_data(user_id)[1]
 
@@ -233,6 +233,11 @@ class ConnectionManager(metaclass=Singleton):
     def get_user_sid(self, user_id: int):
         return self.get_user_data(user_id)[3]
     
+    def update_user_type(self, user_id:int, type: str):
+        # TODO: Check valid types
+        self.db_cur.execute("UPDATE user SET type = ? WHERE user_id = ?", (type,user_id))
+        self.db_con.commit()
+
     # --- Connection methods ---
 
     def create_connection(self, session_key: str, user_id: int):
@@ -252,11 +257,11 @@ class ConnectionManager(metaclass=Singleton):
         self.db_cur.execute("SELECT user_id FROM connection")
         existing_ids = list(map(lambda x: x[0], self.db_cur.fetchall()))
 
-        if self.user_exists(new_connection.user_id) == False:
+        if not self.user_exists(new_connection.user_id):
             warnings.warn(f"User with id {new_connection.user_id} does not exist. Connection request denied.",skip_file_prefixes = _warn_skips)
             return None
 
-        if self.session_exists(new_connection.session_key) == False:
+        if not self.session_exists(new_connection.session_key):
             warnings.warn(f"Session with key {new_connection.session_key} does not exist. Connection request denied.",skip_file_prefixes = _warn_skips)
             return None
         
