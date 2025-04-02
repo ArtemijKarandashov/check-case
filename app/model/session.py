@@ -17,5 +17,5 @@ class Session:
         return export_key, public_key
     
     def _mock_key_generator(self):
-        return randint(100,999),randint(100,999)
+        return str(randint(100,999)),str(randint(100,999))
 

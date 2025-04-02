@@ -16,38 +16,56 @@
         <button onclick="processCheck()">Process check</button>
 
         <br>
-        <h2 id = "session_data">Recived session data</h2>
-        <div id="messages"></div>
+        <h2 id = "session_data">Server response</h2>
+        <div id = "messages"></div>
     
         <script>
             const user_name = document.getElementById('user_name');
             const session_key = document.getElementById('session_key');
             const session_data = document.getElementById('session_data');
             const socket = io();
-    
+            
+            function print_response(data) {
+                const message = document.createElement('p');
+                message.textContent = data.message;
+                session_data.appendChild(message);
+            }
+
             socket.on('connect', () => {
                 console.log('Connected to WebSocket');
             });
+
+            socket.on('error', (data) => {
+                console.log('Received:', data);
+                print_response(data)
+            })
     
             socket.on('login_success', (data) => {
                 console.log('Received:', data);
+                print_response(data)
                 user_name.innerHTML = `Logined us: ${data.name}`;
             });
+
+            socket.on('logout_success', (data) => {
+                console.log('You are no longer connected');
+                print_response(data)
+                user_name.innerHTML = `Logined us: My name`;
+            });
     
-            socket.on('recive_key', (data) => {
+            socket.on('send_session_key', (data) => {
                 console.log('Received:', data);
+                print_response(data)
                 session_key.value = data.session_key;
             });
 
             socket.on('user_connected', (data) => {
                 console.log('Received:', data);
-                const message = document.createElement('p');
-                message.textContent = `User ${data.name} connected to your session!`;
-                session_data.appendChild(message);
+                print_response(data)
             });
 
-            socket.on('check', data => {
+            socket.on('send_result', data => {
                 console.log(data)
+                print_response(data)
             });
     
             function createSession() {

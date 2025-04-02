@@ -88,7 +88,7 @@ class ConnectionManager(metaclass=Singleton):
             del new_session
 
             # TODO: Залогировать ошибку
-            #       Отправить сообщение об ошибке пользователю и запросить разрешение на  повторное подключение используя уже введеные данные
+            #       Отправить сообщение об ошибке пользователю и запросить разрешение на повторное создание сессии
 
             return None
 
@@ -160,6 +160,11 @@ class ConnectionManager(metaclass=Singleton):
 
         new_user = User(name=name, type=type, sid=sid)
 
+        if self.sid_exists(new_user.sid) == True:
+            warnings.warn(f"User with sid {new_user.sid} already exists. User creation abandoned.",skip_file_prefixes = _warn_skips)
+            del new_user
+            return None
+
         self.db_cur.execute("INSERT INTO user VALUES(NULL,?,?,?)", (new_user.name, new_user.type, new_user.sid))
         last_id = self.db_cur.lastrowid
         new_user.id = last_id
@@ -218,23 +223,25 @@ class ConnectionManager(metaclass=Singleton):
         """Returns user's current session"""
         
         if not self.user_exists(user_id):
-            warnings.warn(f"User with id {user_id} wasn't found in any session.",skip_file_prefixes = _warn_skips)
+            warnings.warn(f"User with id {user_id} does not exist.",skip_file_prefixes = _warn_skips)
             return None
 
         self.db_cur.execute("SELECT session_key FROM connection WHERE user_id = ?", (user_id,))
-        return self.db_cur.fetchone()[0]
+        found_keys = self.db_cur.fetchone()
 
-    def get_user_name(self, user_id: int):
-        return self.get_user_data(user_id)[1]
-
-    def get_user_type(self, user_id: int):
-        return self.get_user_data(user_id)[2]
-    
-    def get_user_sid(self, user_id: int):
-        return self.get_user_data(user_id)[3]
+        if found_keys == None:
+            return None
+        
+        return found_keys[0]
     
     def update_user_type(self, user_id:int, type: str):
+        """Changes current user type to either 'CLIENT', 'HOST' or 'PHANTOM'"""
         # TODO: Check valid types
+
+        if not self.user_exists(user_id):
+            warnings.warn(f"User with id {user_id} does not exist. Cannot update type.",skip_file_prefixes = _warn_skips)
+            return None
+
         self.db_cur.execute("UPDATE user SET type = ? WHERE user_id = ?", (type,user_id))
         self.db_con.commit()
 
