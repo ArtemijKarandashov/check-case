@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЧекСплиттер | Сбер</title>
+    <style>
+        :root {
+            --sber-primary: #21A038;
+            --sber-dark: #108C29;
+            --sber-light: #E0F7E9;
+            --sber-black: #212121;
+            --sber-gray: #F5F5F5;
+            --sber-white: #FFFFFF;
+            --sber-text-secondary: #757575;
+        }
+        
+        body {
+            font-family: 'SBSansText', 'Helvetica', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--sber-gray);
+            color: var(--sber-black);
+            line-height: 1.5;
+        }
+        
+        .header {
+            background-color: var(--sber-white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-container {
+            display: flex;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            height: 32px;
+            margin-right: 16px;
+        }
+        
+        .app-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--sber-black);
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background-color: var(--sber-white);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--sber-black);
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-title i {
+            margin-right: 8px;
+            color: var(--sber-primary);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--sber-primary);
+            color: var(--sber-white);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--sber-dark);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .scanner-placeholder {
+            border: 2px dashed #D1D1D1;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: var(--sber-gray);
+        }
+        
+        .scanner-icon {
+            font-size: 48px;
+            color: var(--sber-primary);
+            margin-bottom: 12px;
+        }
+        
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #EEEEEE;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-date {
+            color: var(--sber-text-secondary);
+            font-size: 14px;
+        }
+        
+        .history-amount {
+            font-weight: 600;
+        }
+        
+        .history-details {
+            font-size: 14px;
+            color: var(--sber-text-secondary);
+            margin-top: 4px;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .gallery-item {
+            height: 120px;
+            background-color: var(--sber-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--sber-text-secondary);
+        }
+        
+        .how-to-use {
+            margin-top: 16px;
+        }
+        
+        .step {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        
+        .step-number {
+            background-color: var(--sber-primary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex-grow: 1;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--sber-text-secondary);
+            font-size: 14px;
+            background-color: var(--sber-white);
+            margin-top: 40px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            background-color: var(--sber-light);
+            color: var(--sber-primary);
+            margin-left: 8px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <img src="https://www.sberbank.ru/portalserver/static/templates/%5BBBHOST%5D/RuMasterpageTemplate/static/svg/logo.svg" alt="Сбер" class="logo">
+            <div class="app-name">ЧекСплиттер</div>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-camera"></i> Сканирование чека</h2>
+            <div class="scanner-placeholder">
+                <div class="scanner-icon">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <p>Наведите камеру на чек или загрузите фото</p>
+            </div>
+            <button class="btn btn-primary btn-block">Сканировать чек</button>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-history"></i> История операций <span class="badge">Новые</span></h2>
+            <div class="history-list">
+                <div class="history-item">
+                    <div>
+                        <div>Кафе "Вкусно и точка"</div>
+                        <div class="history-date">Сегодня, 14:30</div>
+                        <div class="history-details">3 человека • Вы заплатили 1 240 ₽</div>
+                    </div>
+                    <div class="history-amount">-1 240 ₽</div>
+                </div>
+                <div class="history-item">
+                    <div>
+                        <div>Пятёрочка</div>
+                        <div class="history-date">Вчера, 19:45</div>
+                        <div class="history-details">2 человека • Ваша доля 280 ₽</div>
+                    </div>
+                    <div class="history-amount">-280 ₽</div>
+                </div>
+                <div class="history-item">
+                    <div>
+                        <div>Магнит</div>
+                        <div class="history-date">12 мая, 10:20</div>
+                        <div class="history-details">4 человека • Ваша доля 890 ₽</div>
+                    </div>
+                    <div class="history-amount">-890 ₽</div>
+                </div>
+                <div class="history-item">
+                    <div>
+                        <div>Кафе "У Васи"</div>
+                        <div class="history-date">10 мая, 21:15</div>
+                        <div class="history-details">5 человек • Вам должны 320 ₽</div>
+                    </div>
+                    <div class="history-amount" style="color: var(--sber-primary);">+320 ₽</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-images"></i> Галерея чеков</h2>
+            <div class="gallery">
+                <div class="gallery-item"><i class="fas fa-receipt" style="font-size: 24px;"></i></div>
+                <div class="gallery-item"><i class="fas fa-receipt" style="font-size: 24px;"></i></div>
+                <div class="gallery-item"><i class="fas fa-receipt" style="font-size: 24px;"></i></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="card-title"><i class="fas fa-question-circle"></i> Как пользоваться сервисом?</h2>
+            <div class="how-to-use">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Сфотографируйте чек</strong>
+                        <p>Используйте кнопку "Сканировать чек" или загрузите фото чека из галереи</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Распознавание товаров</strong>
+                        <p>Система автоматически определит список покупок и цены</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Распределение покупок</strong>
+                        <p>Укажите, кто какие товары покупал, отметив участников</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>Расчёт долей</strong>
+                        <p>Сервис автоматически рассчитает, кто сколько должен</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <strong>Отправка результатов</strong>
+                        <p>Поделитесь результатами с друзьями через мессенджеры</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        © 2024 ЧекСплиттер | Сбер
+    </footer>
+</body>
+</html>
