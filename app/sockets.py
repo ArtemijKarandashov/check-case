@@ -25,7 +25,7 @@ def handle_disconnect():
 def handle_login(data):
     new_user =_con_manager.create_user(type = "CLIENT", sid = session['sid'])
     print(f'Client {session['sid']} logined as {new_user.name}')
-    emit('login_success', {'message': 'You are connected!', 'sid': session['sid'], 'user_id': new_user.id,'name': new_user.name, 'type': new_user.type}, room=session['sid'])
+    emit('login_success', {'message': 'You are connected!', 'name': new_user.name, 'type': new_user.type}, room=session['sid'])
 
 
 @socketio.on('logout')
@@ -34,7 +34,7 @@ def handle_logout():
 
 
 @socketio.on('create_session')
-def handle_create_session():
+def handle_create_session(data):
     print(f'Received create_session request from {session["sid"]}')
     # TODO: Автоматически добавлять пользователя запросившего создание сессии как хоста
     user_id = _con_manager.get_user_id_by_sid(session['sid'])
@@ -81,6 +81,8 @@ def handle_join_session(data):
 
 @socketio.on('process_check')
 def handle_process_check():
+    upload_path = 'app/data/user/temp/'
+
     user_id = _con_manager.get_user_id_by_sid(session['sid'])
     user_data = _con_manager.get_user_data(user_id)
     
@@ -99,7 +101,7 @@ def handle_process_check():
     new_thread.join()
 
     _con_manager.update_session_status(session_key,2)
-    emit('send_result', {'message': 'Check processed!',"status":"done"}, room=session['sid'])
+    emit('check_result', {'message': 'Check processed!',"status":"done"}, room=session['sid'])
     
     
 def _mock_calculate():

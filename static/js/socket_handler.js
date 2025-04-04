@@ -41,13 +41,16 @@ const user_name = document.getElementById('user_name');
                 print_response(data)
             });
 
-            socket.on('send_result', data => {
+            socket.on('check_result', data => {
                 console.log(data)
                 print_response(data)
             });
     
             function createSession() {
-                socket.emit('create_session');
+                socket.emit('create_session', {
+                    "type":'',
+                    "ph_users":0
+                });
             }
             
             function joinSession() {
