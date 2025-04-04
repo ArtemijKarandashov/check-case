@@ -1,6 +1,6 @@
 # Описание эвентов для SocketIO
 Данный скрипт необходимо импортировать в head для работы с flask SocketIO
-<pre><script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></scr ipt></pre>
+<pre><script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script></pre>
 
 <h2>Сигналы принимаемые сервером</h2>
 <pre>
@@ -25,7 +25,7 @@ event 'logout_success' - Возвращается при отключении п
     Содержит json {'message': 'You are disconnected!'}
 event 'user_connected' - Возвращается всем пользователям одной сессии, когда к ней подключается кто то еще.
     Содержит json {'message': 'User connected!','name': 'имя'}
-event 'send_session_key' - вВзвращается при создании новой сессии её хосту.
+event 'send_session_key' - Взвращается при создании новой сессии её хосту.
     Содержит json {'message': 'Session created!','session_key': 'ключ_сессии'}
 event 'error' - Возвращается при ошибке во время обработки любого из запросов, принятого сервером.
     Содержит json {'message': 'ошибка'}. Возможно в будующем появится id ошибки, если потребуется парсить их на клиенте.
