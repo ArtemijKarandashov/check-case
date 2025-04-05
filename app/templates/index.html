@@ -7,6 +7,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
     </head>
     <body>
+        <button onclick="login()">Login</button><button onclick="logout()">Logout</button>
         <h1 id = "user_name">Logined us: My name</h1>
         <input id="session_key" type="text" placeholder="session key" />
 
@@ -15,52 +16,9 @@
         <button onclick="processCheck()">Process check</button>
 
         <br>
-        <h2 id = "session_data">Recived session data</h2>
-        <div id="messages"></div>
+        <h2 id = "session_data">Server response</h2>
+        <div id = "messages"></div>
     
-        <script>
-            const user_name = document.getElementById('user_name');
-            const session_key = document.getElementById('session_key');
-            const session_data = document.getElementById('session_data');
-            const socket = io();
-    
-            socket.on('connect', () => {
-                console.log('Connected to WebSocket');
-            });
-    
-            socket.on('login', (data) => {
-                console.log('Received:', data);
-                user_name.innerHTML = `Logined us: ${data.name}`;
-            });
-    
-            socket.on('recive_key', (data) => {
-                console.log('Received:', data);
-                session_key.value = data.session_key;
-            });
-
-            socket.on('user_connected', (data) => {
-                console.log('Received:', data);
-                const message = document.createElement('p');
-                message.textContent = `User ${data.name} connected to your session!`;
-                session_data.appendChild(message);
-            });
-
-            socket.on('check', data => {
-                console.log(data)
-            });
-    
-            function createSession() {
-                socket.emit('create_session');
-            }
-            
-            function joinSession() {
-                socket.emit('join_session', {session_key: session_key.value});
-            }
-
-            function processCheck(){
-                socket.emit('process_check');
-            }
-
-        </script>
+        <script src="{{ url_for('static', filename='js/socket_handler.js') }}"></script>
     </body>
 </html>

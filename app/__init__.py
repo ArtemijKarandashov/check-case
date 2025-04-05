@@ -1,11 +1,14 @@
 from flask import Flask
 from flask_socketio import SocketIO
+from config import Config
 from app.tools.logger import Logger
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+import os
 
-app_logger = Logger()
+Logger()
+
+app = Flask(__name__,static_folder=os.path.abspath("./static"))
+app.config.from_object(Config)
+socketio = SocketIO(app)
 
 from app import routes, sockets
