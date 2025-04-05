@@ -90,7 +90,11 @@ def handle_process_check():
     session_data = _con_manager.get_session_data(session_key)
     session_status = int(session_data[2])
 
-    if session_status in (1,2):
+    if _con_manager.sid_exists(session['sid']) == False:
+        emit('error', {'message': 'You are not logged in!'}, room=session['sid'])
+        return None
+
+    if session_status != 0:
         emit('error', {'message': 'Session is already (being) processed',"status":"abandoned"}, room=session['sid'])
         return None
     

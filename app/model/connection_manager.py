@@ -3,12 +3,14 @@ from app.model.user import User
 from app.model.connection import Connection
 
 from app.tools.singleton import Singleton
+from app.tools.logger import Logger
 
-import warnings
 import sqlite3
 import os
 
-_warn_skips = (os.path.dirname(__file__),)
+logger = Logger().logger
+
+#_warn_skips = (os.path.dirname(__file__),)
 _path_to_db_template = "static/db_template/setup_db.sql"
 
 class ConnectionManager(metaclass=Singleton):
@@ -33,12 +35,12 @@ class ConnectionManager(metaclass=Singleton):
         """
 
         if not db_path or db_path == 'file::memory:?cache=shared':
-            warnings.warn('No database path provided. Using in-memory database.',skip_file_prefixes = _warn_skips)
+            logger.warning('No database path provided. Using in-memory database.')
             db_path = 'file::memory:?cache=shared'
             self._setup_db(db_path)
 
         if not os.path.exists(db_path) and db_path != 'file::memory:?cache=shared':
-            warnings.warn(f"Database path does not exist. Creating new database at {db_path}",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Database path does not exist. Creating new database at {db_path}")
             splited_path = db_path.split('/')
             path = '/'.join(splited_path[0:-1:1])+'/'
             if not os.path.exists(path):
@@ -84,7 +86,7 @@ class ConnectionManager(metaclass=Singleton):
         new_session = Session()
 
         if self.session_exists(new_session.key) == True:
-            warnings.warn(f"Session with key {new_session.key} already exists. Session creation abandoned.",skip_file_prefixes = _warn_skips) 
+            logger.warning(f"Session with key {new_session.key} already exists. Session creation abandoned.") 
             del new_session
 
             # TODO: Залогировать ошибку
@@ -101,7 +103,7 @@ class ConnectionManager(metaclass=Singleton):
         """Removes the session with the provided key from the database."""
 
         if self.session_exists(session_key) == False:
-            warnings.warn(f"Session with key {session_key} does not exist. Nothing was deleted.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Session with key {session_key} does not exist. Nothing was deleted.")
             return None
 
         self.db_cur.execute("DELETE FROM session WHERE session_key = ?", (session_key,))
@@ -119,7 +121,7 @@ class ConnectionManager(metaclass=Singleton):
         """Returns a list of user ids that are connected to the session with the provided key."""
 
         if self.session_exists(session_key) == False:
-            warnings.warn(f"Session with key {session_key} does not exist. Cannot get users.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Session with key {session_key} does not exist. Cannot get users.")
             return None
 
         self.db_cur.execute("SELECT user_id FROM connection WHERE session_key = ?", (session_key,))
@@ -129,7 +131,7 @@ class ConnectionManager(metaclass=Singleton):
         """smth smth i forgot"""
 
         if not self.session_exists(session_key):
-            warnings.warn(f"Session with key {session_key} does not exist. Returned data is empty",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Session with key {session_key} does not exist. Returned data is empty")
             return ()
 
         self.db_cur.execute("SELECT * FROM session WHERE session_key = ?", (session_key,))
@@ -139,15 +141,15 @@ class ConnectionManager(metaclass=Singleton):
         """Updates session status"""
 
         if status > 2:
-            warnings.warn(f"Wrong session status {status} provided for session {session_key}.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Wrong session status {status} provided for session {session_key}.")
             return None
 
         if status < 0:
-            warnings.warn(f"Wrong session status {status} provided for session {session_key}. Status 0 will be used instaed.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Wrong session status {status} provided for session {session_key}. Status 0 will be used instaed.")
             status = 0
 
         if not self.session_exists(session_key):
-            warnings.warn(f"Session with key {session_key} does not exist. Cannot update status",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Session with key {session_key} does not exist. Cannot update status")
             return ()    
 
         self.db_cur.execute("UPDATE session SET status = ? WHERE session_key = ?", (status,session_key))
@@ -161,7 +163,7 @@ class ConnectionManager(metaclass=Singleton):
         new_user = User(name=name, type=type, sid=sid)
 
         if self.sid_exists(new_user.sid) == True:
-            warnings.warn(f"User with sid {new_user.sid} already exists. User creation abandoned.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"User with sid {new_user.sid} already exists. User creation abandoned.")
             del new_user
             return None
 
@@ -176,7 +178,7 @@ class ConnectionManager(metaclass=Singleton):
         """Deletes the user with the provided id from the database."""
         
         if self.user_exists(user_id) == False:
-            warnings.warn(f"User with id {user_id} does not exist. Nothing was deleted.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"User with id {user_id} does not exist. Nothing was deleted.")
             print('aaaaaasasd')
             return None
 
@@ -203,7 +205,7 @@ class ConnectionManager(metaclass=Singleton):
         """Returns the id of the user with the provided sid (websocket session id)."""
 
         if self.sid_exists(sid) == False:
-            warnings.warn(f"User with sid {sid} does not exist. Cannot provide user id.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"User with sid {sid} does not exist. Cannot provide user id.")
             return None
 
         self.db_cur.execute("SELECT user_id FROM user WHERE sid = ?", (sid,))
@@ -213,7 +215,7 @@ class ConnectionManager(metaclass=Singleton):
         """Returns all data from the database for the user with the provided id."""
 
         if self.user_exists(user_id) == False:
-            warnings.warn(f"User with id {user_id} does not exist. Returned data is empty.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"User with id {user_id} does not exist. Returned data is empty.")
             return ()
 
         self.db_cur.execute("SELECT * FROM user WHERE user_id = ?", (user_id,))
@@ -223,7 +225,7 @@ class ConnectionManager(metaclass=Singleton):
         """Returns user's current session"""
         
         if not self.user_exists(user_id):
-            warnings.warn(f"User with id {user_id} does not exist.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"User with id {user_id} does not exist.")
             return None
 
         self.db_cur.execute("SELECT session_key FROM connection WHERE user_id = ?", (user_id,))
@@ -239,7 +241,7 @@ class ConnectionManager(metaclass=Singleton):
         # TODO: Check valid types
 
         if not self.user_exists(user_id):
-            warnings.warn(f"User with id {user_id} does not exist. Cannot update type.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"User with id {user_id} does not exist. Cannot update type.")
             return None
 
         self.db_cur.execute("UPDATE user SET type = ? WHERE user_id = ?", (type,user_id))
@@ -265,15 +267,15 @@ class ConnectionManager(metaclass=Singleton):
         existing_ids = list(map(lambda x: x[0], self.db_cur.fetchall()))
 
         if not self.user_exists(new_connection.user_id):
-            warnings.warn(f"User with id {new_connection.user_id} does not exist. Connection request denied.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"User with id {new_connection.user_id} does not exist. Connection request denied.")
             return None
 
         if not self.session_exists(new_connection.session_key):
-            warnings.warn(f"Session with key {new_connection.session_key} does not exist. Connection request denied.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Session with key {new_connection.session_key} does not exist. Connection request denied.")
             return None
         
         if user_id in existing_ids:
-            warnings.warn(f"User with id {user_id} is already connected. Connection request denied.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"User with id {user_id} is already connected. Connection request denied.")
             return None
 
         self.db_cur.execute("INSERT INTO connection VALUES(NULL,?,?)", (new_connection.session_key, new_connection.user_id))
@@ -288,7 +290,7 @@ class ConnectionManager(metaclass=Singleton):
         existing_ids = list(map(lambda x: x[0], self.db_cur.fetchall()))
 
         if connection_id not in existing_ids:
-            warnings.warn(f"Connection with id {connection_id} does not exist. Nothing was deleted.",skip_file_prefixes = _warn_skips)
+            logger.warning(f"Connection with id {connection_id} does not exist. Nothing was deleted.")
             return None
 
         self.db_cur.execute("DELETE FROM connection WHERE connection_id = ?", (connection_id,))
