@@ -10,7 +10,6 @@ import os
 
 logger = Logger().logger
 
-#_warn_skips = (os.path.dirname(__file__),)
 _path_to_db_template = "static/db_template/setup_db.sql"
 
 class ConnectionManager(metaclass=Singleton):
@@ -51,6 +50,7 @@ class ConnectionManager(metaclass=Singleton):
         self.db_cur = self.db_con.cursor()
         self.db_cur.execute("PRAGMA foreign_keys = ON")
         self.db_con.commit()
+        self._reset_tables()
 
         print("Connection manager is ready to handle user requests")
     
@@ -76,7 +76,11 @@ class ConnectionManager(metaclass=Singleton):
             raise DatabaseSetupException
     
     def _reset_tables(self):
-        pass
+        self.db_cur.execute("DELETE FROM user")
+        self.db_cur.execute("DELETE FROM session")
+        self.db_cur.execute("DELETE FROM connection")
+        self.db_cur.execute("DELETE FROM sqlite_sequence")
+        self.db_con.commit()
 
     # --- Session methods ---
 
@@ -162,7 +166,7 @@ class ConnectionManager(metaclass=Singleton):
 
         new_user = User(name=name, type=type, sid=sid)
 
-        if self.sid_exists(new_user.sid) == True:
+        if self.sid_exists(new_user.sid) == True and type !='PHANTOM':
             logger.warning(f"User with sid {new_user.sid} already exists. User creation abandoned.")
             del new_user
             return None
