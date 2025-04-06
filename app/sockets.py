@@ -44,10 +44,10 @@ def handle_logout():
 
 @socketio.on('create_session')
 def handle_create_session(data):
-    _VALID_TYPES = ['DEFAULT']
+    _VALID_TYPES = ['DEFAULT', 'SINGULAR']
     
     session_type = data['type']
-    ph_users = int(data['ph_users'])
+    
 
     if session_type not in _VALID_TYPES:
         logger.error(f'Wrong session type {session_type} provided. Session creation abandoned.')
@@ -70,11 +70,13 @@ def handle_create_session(data):
         return None
 
     _con_manager.update_user_type(user_id,'HOST')
-    new_session = _con_manager.create_session()
+    new_session = _con_manager.create_session(stype=session_type)
     conect_user(new_session.key, user_id)
 
-    for i in range(ph_users):
-        create_phantom_user(new_session.key)
+    if new_session.type == 'SINGULAR':
+        ph_users = int(data['ph_users'])
+        for i in range(ph_users):
+            create_phantom_user(new_session.key)
 
     emit('send_session_key', {'message': 'Session created!','session_key': str(new_session.key)}, room=session['sid'])
 
@@ -110,7 +112,9 @@ def handle_process_check():
     
     session_key = _con_manager.get_users_session(user_id)
     session_data = _con_manager.get_session_data(session_key)
+
     session_status = int(session_data[2])
+    session_type = session_data[3]
 
     if _con_manager.sid_exists(session['sid']) == False:
         emit('error', {'message': 'You are not logged in!'}, room=session['sid'])

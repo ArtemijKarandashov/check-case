@@ -53,7 +53,7 @@ socket.on('check_result', data => {
     
 function createSession() {
     socket.emit('create_session', {
-        "type":'DEFAULT',
+        "type":'SINGULAR',
         "ph_users":0
     });
 }
