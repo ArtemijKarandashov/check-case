@@ -24,16 +24,11 @@ def handle_disconnect():
 
 @socketio.on('login')
 def handle_login(data):
-
-    if _con_manager.sid_exists(session['sid']):
-        emit('error', {'message': 'You are already logged in!'}, room=session['sid'])
-        return None
-
-    if data['name'] == '':
-        data['name'] = None
-
-    new_user =_con_manager.create_user(type = "CLIENT", sid = session['sid'])
-    logger.info(f'Client {session['sid']} logined as {new_user.name}')
+    name = data['name']
+    if not data['name'] == '':
+        name = None
+    new_user =_con_manager.create_user(name = name, type = "CLIENT", sid = session['sid'])
+    print(f'Client {session['sid']} logined as {new_user.name}')
     emit('login_success', {'message': 'You are connected!', 'name': new_user.name, 'type': new_user.type}, room=session['sid'])
 
 
@@ -125,7 +120,7 @@ def handle_process_check(data):
         return None
 
     if session_status != 0:
-        emit('warning', {'message': 'Session is already (being) processed',"status":"abandoned"}, room=session['sid'])
+        emit('error', {'message': 'Session is already (being) processed',"status":"abandoned"}, room=session['sid'])
         return None
     
     _con_manager.update_session_status(session_key,1)
@@ -210,9 +205,8 @@ def set_distribution_type(dtype: str, session_key: str):
 
 def logout_user():
     if not _con_manager.sid_exists(session['sid']):
-        logger.info(f'Cannot logout user. User with given sid {session['sid']} does not exist in db. Already logged out?')
-        emit('warning',{'message':'Already logged out'}, room=session['sid'])
-        return False
+        print(f'Cannot logout user. User with given sid {session['sid']} does not exist in db. Already logged out?')
+        return None
 
     user_id = _con_manager.get_user_id_by_sid(session['sid'])
     user_data = _con_manager.get_user_data(user_id)
