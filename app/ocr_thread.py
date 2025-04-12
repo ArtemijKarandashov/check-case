@@ -9,3 +9,4 @@ class ThreadOCR(Thread):
     
     def run(self):
         self.ocr_results = OCR(self.base64)
+        print(self.ocr_results)

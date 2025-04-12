@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS session (
   session_id INTEGER PRIMARY KEY AUTOINCREMENT,
   session_key TEXT NOT NULL UNIQUE,
   status INT NOT NULL,
-  stype TEXT CHECK( stype IN ('DEFAULT','SINGULAR') ) NOT NULL DEFAULT 'DEFAULT'
-  dtype TEXT CHECK( stype IN ('EVEN', 'PROCENTAGE','MANUAL') ) NOT NULL DEFAULT 'EVEN'
+  stype TEXT CHECK( stype IN ('DEFAULT','SINGULAR') ) NOT NULL DEFAULT 'DEFAULT',
+  dtype TEXT CHECK( dtype IN ('EVEN', 'PROCENTAGE','MANUAL') ) NOT NULL DEFAULT 'EVEN'
 );
 
 -- -----------------------------------------------------

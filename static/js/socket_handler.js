@@ -3,7 +3,7 @@ const session_key = document.getElementById('session_key');
 const session_data = document.getElementById('session_data');
 const socket = io();
 
-let base64Output = NaN;
+let base64Output = 'blank';
             
 function print_response(data) {
     const message = document.createElement('p');
@@ -55,8 +55,8 @@ socket.on('check_result', data => {
     
 function createSession() {
     socket.emit('create_session', {
-        "type":'SINGULAR',
-        "ph_users":4
+        "type":'DEFAULT',
+        "ph_users":0
     });
 }
             
@@ -68,7 +68,7 @@ function joinSession() {
             
 function processCheck(){
     socket.emit('process_check',{
-        'image':base64String,
+        'image':base64Output,
     });
 }
 
@@ -80,22 +80,21 @@ function logout(){
     socket.emit('logout')
 }
 
-document.getElementById('fileInput').addEventListener('change', function(event) {
-    const file = event.target.files[0];
+
+document.querySelector('input[type=file]').onchange = function() {
+    const file = document.querySelector("input[type=file]").files[0];
+    const reader = new FileReader();
+
+    reader.addEventListener(
+        "load",
+        () => {
+        result = reader.result;
+        base64Output = result;
+        },
+        false,
+    );
 
     if (file) {
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            const base64String = e.target.result;
-
-            base64String = base64String;
-
-            const imagePreview = document.getElementById('imagePreview');
-            imagePreview.src = base64String;
-            imagePreview.style.display = 'block';
-        };
-
-        reader.readAsDataURL(file); // Read the file as a data URL
+        reader.readAsDataURL(file);
     }
-});
+};

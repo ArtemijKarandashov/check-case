@@ -84,17 +84,17 @@ class ConnectionManager(metaclass=Singleton):
 
     # --- Session methods ---
 
-    def create_session(self,stype: str ='DEFAULT'):
+    def create_session(self,stype: str ='DEFAULT',dtype='EVEN'):
         """Creates a new session object and appends it's data to the provided database."""
 
-        new_session = Session(stype=stype)
+        new_session = Session(stype=stype,dtype=dtype)
 
         if self.session_exists(new_session.key) == True:
             logger.warning(f"Session with key {new_session.key} already exists. Session creation abandoned.") 
             del new_session
             return None
 
-        self.db_cur.execute("INSERT INTO session VALUES(NULL,?,?,?)", (new_session.key,0,stype))
+        self.db_cur.execute("INSERT INTO session VALUES(NULL,?,?,?,?)", (new_session.key,0,stype,dtype))
         self.db_con.commit()
 
         return new_session

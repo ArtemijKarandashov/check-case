@@ -100,7 +100,6 @@ def handle_join_session(data):
 @socketio.on('process_check')
 def handle_process_check(data):
     base64_image = data['image']
-    print(base64_image)
 
     user_id = _con_manager.get_user_id_by_sid(session['sid'])
     user_data = _con_manager.get_user_data(user_id)
