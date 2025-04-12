@@ -3,7 +3,7 @@ from flask_socketio import emit
 from . import socketio, app_con_manager
 
 from app.tools.logger import Logger
-from app.ocr_thread import ThreadOCR
+from app.ocr.ocr_thread import ThreadOCR
 
 
 _con_manager = app_con_manager
@@ -99,6 +99,10 @@ def handle_join_session(data):
 @socketio.on('process_check')
 def handle_process_check(data):
     base64_image = data['image']
+
+    if base64_image is None:
+        emit('error', {'message': 'Got NoneType instaed of image! OCR process abandoned.'}, room=session['sid'])
+        return None
 
     user_id = _con_manager.get_user_id_by_sid(session['sid'])
     user_data = _con_manager.get_user_data(user_id)

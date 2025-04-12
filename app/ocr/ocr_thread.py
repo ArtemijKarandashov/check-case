@@ -1,5 +1,5 @@
 from threading import Thread
-from app.ocr_base64 import OCR
+from app.ocr.ocr_base64 import OCR
 
 class ThreadOCR(Thread):
     def __init__(self, base64_image: str):

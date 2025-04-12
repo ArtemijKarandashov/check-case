@@ -20,7 +20,7 @@ class Logger(metaclass=Singleton):
 
         self.file_handler = CustomFileHandler(self.filename, mode='a')
         self.file_handler.setLevel(log_level)
-    
+
         self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         self.file_handler.setFormatter(self.formatter)
 

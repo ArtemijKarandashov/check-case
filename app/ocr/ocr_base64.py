@@ -10,6 +10,7 @@ from PIL import Image
 def OCR(base64_image: str):
 
     base64_image = base64_image.replace('data:image/jpeg;base64,', '')
+    # TODO:                         FIX FILE FORMAT ^
     
     image_data = base64.b64decode(base64_image)
     nparr = np.frombuffer(image_data, dtype=np.uint8)
