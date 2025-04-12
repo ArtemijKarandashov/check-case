@@ -1,13 +1,12 @@
-from app.model.connection_manager import ConnectionManager
 from flask import session, request
 from flask_socketio import emit
-from . import socketio
+from . import socketio, app_con_manager
+
 from app.tools.logger import Logger
 from app.ocr_thread import ThreadOCR
 
 
-
-_con_manager = ConnectionManager()
+_con_manager = app_con_manager
 logger = Logger().logger
 
 @socketio.on('connect')

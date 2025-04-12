@@ -1,4 +1,5 @@
 from app.tools.singleton import Singleton
+from .. import data_dir
 
 import datetime as dt
 import os
@@ -6,10 +7,10 @@ import sys
 import logging
 
 class Logger(metaclass=Singleton):
-    def __init__(self, file_path = f'app/data/log/{dt.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-log.txt', file_size_limit = 1000000, log_level = logging.INFO):
+    def __init__(self, file_path = f'log/{dt.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}-log.txt', file_size_limit = 1000000, log_level = logging.INFO):
         
         self.file_size_limit = file_size_limit
-        self.filename = file_path
+        self.filename = data_dir + file_path
 
         self._check_path_exists()
         self._check_file_size()
@@ -17,7 +18,7 @@ class Logger(metaclass=Singleton):
         self.logger = logging.getLogger()
         self.logger.setLevel(log_level)
 
-        self.file_handler = CustomFileHandler(file_path, mode='a')
+        self.file_handler = CustomFileHandler(self.filename, mode='a')
         self.file_handler.setLevel(log_level)
     
         self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -36,7 +37,7 @@ class Logger(metaclass=Singleton):
             splited_path = self.filename.split('/')
             path = '/'.join(splited_path[0:-1:1])+'/'
             if not os.path.exists(path):
-                os.makedirs(path)
+                os.makedirs(path, exist_ok=True)
             open(self.filename, 'w').close()
 
 

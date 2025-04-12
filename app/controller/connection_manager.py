@@ -3,12 +3,13 @@ from app.model.user import User
 from app.model.connection import Connection
 
 from app.tools.singleton import Singleton
-from app.tools.logger import Logger
+
+from .. import app_logger, data_dir 
 
 import sqlite3
 import os
 
-logger = Logger().logger
+logger = app_logger.logger
 
 _path_to_db_template = "static/db_template/setup_db.sql"
 
@@ -25,28 +26,29 @@ class ConnectionManager(metaclass=Singleton):
 
     # --- Constructor methods ---
 
-    def __init__(self, db_path: str ="app/data/db/connections.db"):
+    def __init__(self, db_path: str ="db/connections.db"):
         """
         Constructor for ConnectionManager.
 
         Args:
             db_path (str): The path to the database file. If not provided, it will default to 'app/data/db/connections.db'. If the path does not exist, it will be created.
         """
+        full_path = data_dir + db_path
 
         if not db_path or db_path == 'file::memory:?cache=shared':
             logger.warning('No database path provided. Using in-memory database.')
             db_path = 'file::memory:?cache=shared'
             self._setup_db(db_path)
 
-        if not os.path.exists(db_path) and db_path != 'file::memory:?cache=shared':
+        if not os.path.exists(full_path) and db_path != 'file::memory:?cache=shared':
             logger.warning(f"Database path does not exist. Creating new database at {db_path}")
-            splited_path = db_path.split('/')
+            splited_path = full_path.split('/')
             path = '/'.join(splited_path[0:-1:1])+'/'
             if not os.path.exists(path):
-                os.makedirs(path)
-            self._setup_db(db_path)
+                os.makedirs(path, exist_ok=True)
+            self._setup_db(full_path)
         
-        self.db_con = sqlite3.connect(db_path, check_same_thread=False)
+        self.db_con = sqlite3.connect(full_path, check_same_thread=False)
         self.db_cur = self.db_con.cursor()
         self.db_cur.execute("PRAGMA foreign_keys = ON")
         self.db_con.commit()
@@ -128,7 +130,7 @@ class ConnectionManager(metaclass=Singleton):
         return list(map(lambda x: x[0], self.db_cur.fetchall()))
 
     def get_session_data(self, session_key: str):
-        """smth smth i forgot"""
+        """Returns all values of given session attributes."""
 
         if not self.session_exists(session_key):
             logger.warning(f"Session with key {session_key} does not exist. Returned data is empty")
@@ -138,7 +140,7 @@ class ConnectionManager(metaclass=Singleton):
         return self.db_cur.fetchone()
     
     def update_session_status(self, session_key: str, status: int):
-        """Updates session status"""
+        """Updates session status."""
 
         if status > 2:
             logger.warning(f"Wrong session status {status} provided for session {session_key}.")
