@@ -6,7 +6,7 @@ from safe_convertion import is_numeric
 
 
 def get_ocr_data(reader: easyocr.Reader(['ru']), img_path: str, **kwargs) -> list:
-    width_ths:  float = 2.5
+    width_ths:  float = 2
     height_ths: float = 1.5
 
     data: list = reader.readtext(img_path, width_ths=width_ths, height_ths=height_ths, detail=0)
@@ -37,4 +37,4 @@ def get_total_sum(data: list) -> dict[str: float]:
 
         except Exception as e:                  # ugly failsafe
             print(e)
-            return 0
+            return None
