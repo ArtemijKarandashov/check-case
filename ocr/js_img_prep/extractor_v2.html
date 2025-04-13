@@ -1,19 +1,20 @@
 <input type="file" id="upload" accept="image/*">
-
+<br>
 <script>
     function drawImages(img_array) {
+        scale = 0.7;
         img_array.forEach((img, i) => {
                 const imgCanvas = document.createElement('canvas');
-                const description = document.createElement('p');
-                description.textContent = `img ${i + 1}`;
-                imgCanvas.appendChild(description);
                 
                 const verticalPadding = 10;
                 imgCanvas.style.paddingTop = `${verticalPadding}px`;
                 imgCanvas.style.paddingBottom = `${verticalPadding}px`;
 
-                imgCanvas.width = img.cols;
-                imgCanvas.height = img.rows;
+                width = Math.floor(img.cols * scale);
+                height = Math.floor(img.rows * scale);
+                imgCanvas.style.width = width;
+                imgCanvas.style.height = height;
+
                 cv.imshow(imgCanvas, img);
                 document.body.appendChild(imgCanvas);
             });
@@ -127,11 +128,11 @@
 
     // Image align
     function aligner(img) {
-        // delPrevCanvases();
+        delPrevCanvases();
 
-        // let src = cv.imread(img);
-        let src = new cv.Mat();
-        cv.cvtColor(img, src, cv.COLOR_RGBA2RGB);
+        let src = cv.imread(img);
+        // let src = new cv.Mat();
+        // cv.cvtColor(img, src, cv.COLOR_RGBA2RGB);
         
         let gray = new cv.Mat();
         let edges = new cv.Mat();
@@ -143,9 +144,12 @@
 
         cv.HoughLinesP(edges, lines, 1, Math.PI / 180, 100, 50, 20);
 
-
         let angles = [];
         let positions = [];
+
+        // let lineImg = cv.imread(img); // For visualization
+        let lineImg = new cv.Mat();
+        cv.cvtColor(src, lineImg, cv.COLOR_RGBA2RGB);
 
         for (let i = 0; i < lines.rows; i++) {
             let [x1, y1, x2, y2] = lines.data32S.slice(i * 4, i * 4 + 4);
@@ -157,6 +161,9 @@
             if (Math.abs(deg) < 15) {
                 angles.push(angle);
                 positions.push((y1 + y2) / 2);
+
+                // Draw the detected line in green
+                cv.line(lineImg, new cv.Point(x1, y1), new cv.Point(x2, y2), new cv.Scalar(0, 255, 0, 255), 2);
             }
         }
 
@@ -175,6 +182,8 @@
                 weightMap[yy] += w;
             }
         }
+
+        console.log(angleMap);
 
         for (let y = 0; y < src.rows; y++) {
             if (weightMap[y] > 0) {
@@ -204,26 +213,6 @@
         cv.remap(src, aligned, map_x, map_y, cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
 
 
-
-        // let lineImg = cv.imread(img); // For visualization
-        let lineImg = new cv.Mat();
-        cv.cvtColor(src, lineImg, cv.COLOR_RGBA2RGB);
-
-        for (let i = 0; i < lines.rows; i++) {
-            let [x1, y1, x2, y2] = lines.data32S.slice(i * 4, i * 4 + 4);
-            let dx = x2 - x1, dy = y2 - y1;
-            let angle = Math.atan2(dy, dx);
-            let deg = angle * 180 / Math.PI;
-
-            if (Math.abs(deg) < 30) {
-                angles.push(angle);
-                positions.push((y1 + y2) / 2);
-
-                // Draw the detected line in green
-                cv.line(lineImg, new cv.Point(x1, y1), new cv.Point(x2, y2), new cv.Scalar(0, 255, 0, 255), 2);
-            }
-        }
-
         ///////////////////////////////////////////// here
         drawImages([aligned, lineImg, src, edges]);
         return aligned;
@@ -232,7 +221,6 @@
         src.delete(); gray.delete(); edges.delete(); lines.delete();
         map_x.delete(); map_y.delete(); aligned.delete();
     }
-
 
     // Helper function
     function orderPoints(pts) {
@@ -258,7 +246,7 @@
     function loadOpenCV() { 
         return new Promise((resolve) => { 
             let script = document.createElement('script'); 
-            script.src = 'https://docs.opencv.org/4.x/opencv.js'; 
+            script.src = 'opencv.js'; 
             script.onload = () => { onOpenCvReady(); cv.onRuntimeInitialized = resolve; }; 
             document.body.appendChild(script); 
             }
@@ -270,7 +258,7 @@
 
         document.getElementById('upload').addEventListener('change', (event) => {
                 let imgElement = new Image();
-                imgElement.onload = () => aligner(extractImage(imgElement)); // extractImage(imgElement)
+                imgElement.onload = () => aligner_v1(imgElement); // extractImage(imgElement)
                 imgElement.src = URL.createObjectURL(event.target.files[0]);
             }
         );
