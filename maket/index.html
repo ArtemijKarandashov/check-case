@@ -40,22 +40,46 @@
         </div>
         
         <!-- Блок распределения платежей -->
-        <div class="card distribution-block">
+        <div class="card manual-distribution-block">
             <h2 class="card-title"><i class="fas fa-percentage"></i> Распределение платежей</h2>
-            <div class="participants-list" id="participantsList">
-                <!-- Участники будут добавляться через JS -->
+            
+            <div class="distribution-type-selector">
+                <button class="btn btn-outline active" id="percentageModeBtn">
+                    <i class="fas fa-percent"></i> Процентный
+                </button>
+                <button class="btn btn-outline" id="manualModeBtn">
+                    <i class="fas fa-edit"></i> По позициям
+                </button>
             </div>
-            <div class="distribution-summary">
-                <div class="total-percentage">
-                    Всего распределено: <span id="totalPercentage">0</span>%
+            
+            <!-- Процентное распределение -->
+            <div id="percentageDistribution" class="distribution-section">
+                <div class="participants-list" id="participantsList">
+                    <!-- Участники будут добавляться через JS -->
                 </div>
-                <div class="total-amount">
-                    Итого к оплате: <span id="totalAmount">0</span> ₽
+                <div class="distribution-summary">
+                    <div class="total-percentage">
+                        Всего распределено: <span id="totalPercentage">0</span>%
+                    </div>
+                    <div class="total-amount">
+                        Итого к оплате: <span id="totalAmount">0</span> ₽
+                    </div>
                 </div>
+                <button class="btn btn-primary btn-block" id="confirmDistributionBtn" disabled>
+                    <i class="fas fa-check"></i> Подтвердить распределение
+                </button>
             </div>
-            <button class="btn btn-primary btn-block" id="confirmDistributionBtn" disabled>
-                <i class="fas fa-check"></i> Подтвердить распределение
-            </button>
+            
+            <!-- Ручное распределение по позициям -->
+            <div id="manualDistribution" class="distribution-section" style="display: none;">
+                <div class="bill-items" id="bill-items">
+                    <!-- Позиции чека будут добавляться через JS -->
+                </div>
+                <button class="btn btn-primary btn-block" id="calculate-button">
+                    <i class="fas fa-calculator"></i> Рассчитать доли
+                </button>
+                <div class="results" id="results"></div>
+            </div>
         </div>
         
         <!-- Блок QR кода -->
@@ -76,14 +100,14 @@
                 <ol class="instructions-list">
                     <li>Сфотографируйте или загрузите чек</li>
                     <li>Система автоматически распознает участников</li>
-                    <li>Распределите платежи между участниками</li>
+                    <li>Выберите тип распределения: процентное или по позициям</li>
                     <li>Подтвердите распределение</li>
                     <li>Поделитесь QR-кодом с друзьями</li>
                 </ol>
             </div>
         </div>
 
-        <!-- Обновленный блок разработчиков -->
+        <!-- Блок разработчиков -->
         <div class="card developers-block">
             <h2 class="card-title"><i class="fas fa-code"></i> Разработчики</h2>
             <div class="developers-list">
