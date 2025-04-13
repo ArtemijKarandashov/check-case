@@ -2,7 +2,7 @@
 const AppData = {
     receipt: {
       totalAmount: 5730,
-      participants: ["Кот", "Собака", "Сова"],
+      participants: ["Кот", "Собака", "Сова", "Пингвин"],
       items: [
         { name: "Стейк Рибай", price: 1500 },
         { name: "Салат Цезарь", price: 450 },
