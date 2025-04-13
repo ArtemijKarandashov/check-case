@@ -86,7 +86,7 @@ class ConnectionManager(metaclass=Singleton):
 
     # --- Session methods ---
 
-    def create_session(self,stype: str ='DEFAULT',dtype='EVEN'):
+    def create_session(self,stype: str ='DEFAULT',dtype: str ='PROCENTAGE'):
         """Creates a new session object and appends it's data to the provided database."""
 
         new_session = Session(stype=stype,dtype=dtype)

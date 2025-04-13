@@ -3,7 +3,6 @@ const session_key = document.getElementById('session_key');
 const session_data = document.getElementById('session_data');
 const socket = io();
 
-let base64Output = 'blank';
             
 function print_response(data) {
     const message = document.createElement('p');
@@ -66,12 +65,6 @@ function joinSession() {
     });
 }
             
-function processCheck(){
-    socket.emit('process_check',{
-        'image':base64Output,
-    });
-}
-
 function login(){
     socket.emit('login', {"name":''})
 }
@@ -79,22 +72,3 @@ function login(){
 function logout(){
     socket.emit('logout')
 }
-
-
-document.querySelector('input[type=file]').onchange = function() {
-    const file = document.querySelector("input[type=file]").files[0];
-    const reader = new FileReader();
-
-    reader.addEventListener(
-        "load",
-        () => {
-        result = reader.result;
-        base64Output = result;
-        },
-        false,
-    );
-
-    if (file) {
-        reader.readAsDataURL(file);
-    }
-};

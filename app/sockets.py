@@ -131,13 +131,16 @@ def handle_process_check(data):
     new_thread.start()
     new_thread.join()
 
-    ocr_data = new_thread.ocr_results
+    total_sum = new_thread.total_sum
+    names = {}
 
-    for (bbox, text, prob) in ocr_data:
-        print(f'Detected text: {text} with probability: {prob}')
+    users = _con_manager.get_users_in_session(session_key)
+    for user_id in users:
+        user_data = _con_manager.get_user_data(user_id)
+        names[user_id]=user_data[1]
 
     _con_manager.update_session_status(session_key,2)
-    emit('check_result', {'message': 'Check processed!',"status":"done"}, room=session['sid'])
+    emit('check_result', {'message': 'Check processed!',"status":"done","total_sum":total_sum,"names":names}, room=session['sid'])
 
 
 @socketio.on('all_users_joined')
