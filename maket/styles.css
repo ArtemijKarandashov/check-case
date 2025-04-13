@@ -172,6 +172,22 @@
     transform: translateY(0);
   }
   
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    transition: all 0.2s ease;
+  }
+  
+  .btn-outline.active {
+    background: var(--primary);
+    color: white;
+  }
+  
+  .btn-outline:hover:not(.active) {
+    background: rgba(33, 160, 56, 0.1);
+  }
+  
   .btn-block {
     display: flex;
     width: 100%;
@@ -183,6 +199,16 @@
   }
   
   /* Блок распределения платежей */
+  .distribution-type-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .distribution-section {
+    transition: opacity 0.3s ease;
+  }
+  
   .participants-list {
     margin: 20px 0;
     display: grid;
@@ -249,6 +275,86 @@
   
   #totalPercentage {
     color: var(--primary);
+  }
+  
+  /* Ручное распределение */
+  .bill-items {
+    margin-bottom: 20px;
+    display: grid;
+    gap: 15px;
+  }
+  
+  .item {
+    background-color: var(--bg-body);
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  
+  .item h3 {
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  
+  .item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  
+  .item select[multiple] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    min-height: 120px;
+  }
+  
+  .item select[multiple] option {
+    padding: 8px;
+    margin: 2px 0;
+    border-radius: 4px;
+  }
+  
+  .item select[multiple] option:hover {
+    background-color: var(--primary-light);
+  }
+  
+  .results {
+    margin-top: 20px;
+    padding: 16px;
+    background-color: var(--primary-light);
+    border-radius: 8px;
+  }
+  
+  [data-theme="dark"] .results {
+    background-color: rgba(33, 160, 56, 0.1);
+  }
+  
+  .results h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+    color: var(--primary);
+  }
+  
+  .results p {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .results strong {
+    color: var(--primary);
+  }
+  
+  .total-summary {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-weight: bold;
   }
   
   /* Блок QR-кода */
@@ -396,18 +502,6 @@
     font-weight: bold;
   }
   
-  .total-summary {
-    margin: 16px 0;
-    padding: 12px;
-    background-color: var(--primary-light);
-    border-radius: 8px;
-    font-size: 17px;
-  }
-  
-  [data-theme="dark"] .total-summary {
-    background-color: rgba(33, 160, 56, 0.1);
-  }
-  
   .notification-close {
     margin-top: 16px;
     width: 100%;
@@ -458,8 +552,8 @@
   
   /* Анимации */
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
   @keyframes fadeOut {
@@ -513,6 +607,14 @@
     
     .scanner-icon {
       font-size: 48px;
+    }
+    
+    .distribution-type-selector {
+      flex-direction: column;
+    }
+    
+    .btn-outline {
+      width: 100%;
     }
   }
   
