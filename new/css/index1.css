@@ -1,0 +1,110 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f8f9fa;
+}
+
+h1 {
+    text-align: center;
+    color: #343a40;
+    padding: 20px 0;
+    background-color: #fff;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#bill-items {
+    margin: 20px auto;
+    max-width: 600px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px; /* Уменьшаем отступ снизу */
+}
+
+#add-item-button,
+#calculate-button {
+    padding: 12px 24px;
+    background-color: #28a745; /* Зеленый цвет кнопки */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1rem; /* Увеличим размер шрифта, если нужно */
+}
+
+#add-item-button:hover,
+#calculate-button:hover {
+    background-color: #218838; /* Более темный зеленый при наведении */
+}
+
+/* Добавляем контейнер для кнопок, чтобы управлять их расположением */
+.button-container {
+    display: flex;
+    justify-content: flex-start; /* Выравниваем по левому краю */
+    align-items: center;
+    margin: 20px auto;
+    max-width: 600px;
+    padding: 0 20px;
+}
+
+.button-container button {
+  margin-right: 10px; /* Добавляем отступ между кнопками */
+}
+
+#results {
+    margin: 20px auto;
+    max-width: 600px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Дополнительные стили для лучшего соответствия */
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block; /* Размещает метки над полями ввода */
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box; /* Чтобы padding не увеличивал ширину элемента */
+}
+
+/* Пример стилизации для "распределения платежей" (может потребоваться корректировка) */
+.payment-distribution {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.payment-distribution h2 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.payment-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.payment-row label {
+  width: 100px;
+}
+
+.payment-row input[type="number"] {
+  width: 50px; /* Adjust as needed */
+  margin-right: 10px;
+}
