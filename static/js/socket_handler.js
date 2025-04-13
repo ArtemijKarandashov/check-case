@@ -1,8 +1,6 @@
 const user_name = document.getElementById('user_name');
 const session_key = document.getElementById('session_key');
 const session_data = document.getElementById('session_data');
-const socket = io();
-
             
 function print_response(data) {
     const message = document.createElement('p');

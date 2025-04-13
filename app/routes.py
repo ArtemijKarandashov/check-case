@@ -3,8 +3,5 @@ from flask import render_template
 
 @app.route('/')
 def index():
-    return render_template('DEBUG.html')
+    return render_template('index.html')
 
-@app.route('/man')
-def man():
-    return render_template('manual_distrebution.html')

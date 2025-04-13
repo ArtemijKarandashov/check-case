@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/multiple-select/1.5.2/multiple-select.min.js"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manual_dist.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/multiple-select/1.5.2/multiple-select.min.css">
+
+    <title>ЧекСплиттер</title>
+</head>
+<body>
+    <div id="app">
+        <!-- Your SPA content will go here -->
+        <h1>Welcome to your SPA!</h1>
+        <button id="sendMessage">Send Message</button>
+        <div id="messages"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/manual_dist.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/socket_handler.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/opencv.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/image_prep.js') }}"></script>
+</body>
+</html>

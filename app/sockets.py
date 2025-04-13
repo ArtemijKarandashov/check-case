@@ -1,4 +1,4 @@
-from flask import session, request
+from flask import session, request, render_template
 from flask_socketio import emit
 from . import socketio, app_con_manager
 
@@ -111,7 +111,8 @@ def handle_process_check(data):
     session_data = _con_manager.get_session_data(session_key)
 
     session_status = int(session_data[2])
-    session_type = session_data[3]
+    session_stype = session_data[3]
+    session_dtype = session_data[4]
 
     if _con_manager.sid_exists(session['sid']) == False:
         emit('error', {'message': 'You are not logged in!'}, room=session['sid'])
@@ -125,22 +126,37 @@ def handle_process_check(data):
         emit('error', {'message': 'Session is already (being) processed',"status":"abandoned"}, room=session['sid'])
         return None
     
-    _con_manager.update_session_status(session_key,1)
-
     new_thread = ThreadOCR(base64_image)
     new_thread.start()
+    _con_manager.update_session_status(session_key,1)
     new_thread.join()
 
-    total_sum = new_thread.total_sum
-    names = {}
+    if session_dtype == 'PROCENTAGE':
+        total_sum = new_thread.total_sum
+        names = {}
 
-    users = _con_manager.get_users_in_session(session_key)
-    for user_id in users:
-        user_data = _con_manager.get_user_data(user_id)
-        names[user_id]=user_data[1]
+        users = _con_manager.get_users_in_session(session_key)
+        for user_id in users:
+            user_data = _con_manager.get_user_data(user_id)
+            names[user_id]=user_data[1]
 
-    _con_manager.update_session_status(session_key,2)
-    emit('check_result', {'message': 'Check processed!',"status":"done","total_sum":total_sum,"names":names}, room=session['sid'])
+        _con_manager.update_session_status(session_key,2)
+
+        emit('check_result', {
+            'message': 'Check processed!',
+            "type":session_dtype,
+            "total_sum":total_sum,
+            "names":names
+            }, room=session['sid'])
+    elif session_dtype == 'MANUAL':
+        logger.warning("Incomplete feature")
+
+        emit('check_result', {
+            'message': 'Check processed!',
+            "type":session_dtype,
+            "total_sum":total_sum,
+            "names":names
+            }, room=session['sid'])
 
 
 @socketio.on('all_users_joined')
@@ -256,3 +272,12 @@ def logout_user():
 def create_phantom_user(session_key: str):
     ph_user = _con_manager.create_user(type = "PHANTOM")
     conect_user(session_key, ph_user.id)
+
+
+@socketio.on('request_html')
+def handle_message(data):
+    emit('load_html',{'page':render_template(f'{data['page']}.html')}, room=session['sid'])
+
+@socketio.on('request_script')
+def handle_request_script(script_name):
+    emit('load_script', {'script': script_name}, room=session['sid'])
