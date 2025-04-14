@@ -5,8 +5,6 @@ const manualParticipantsList = document.getElementById('manualParticipantsList')
 const totalAmountEl = document.getElementById('totalAmount');
 const totalPercentageEl = document.getElementById('totalPercentage');
 const confirmDistributionBtn = document.getElementById('confirmDistributionBtn');
-const newParticipantInput = document.getElementById('newParticipantInput');
-const addParticipantBtn = document.getElementById('addParticipantBtn');
 
 // Элементы для ручного распределения
 const percentageModeBtn = document.getElementById('percentageModeBtn');
@@ -26,10 +24,6 @@ initManualDistribution();
 
 confirmDistributionBtn.addEventListener('click', confirmPercentageDistribution);
 calculateButton.addEventListener('click', calculateManualShares);
-addParticipantBtn.addEventListener('click', addCustomParticipant);
-newParticipantInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') addCustomParticipant();
-});
 
 percentageModeBtn.addEventListener('click', () => switchMode('percentage'));
 manualModeBtn.addEventListener('click', () => switchMode('manual'));
@@ -153,8 +147,7 @@ function removeParticipant(id) {
   initManualDistribution();
 }
 
-function addCustomParticipant() {
-  const name = newParticipantInput.value.trim();
+function addCustomParticipant(name) {
   
   if (!name) {
     showErrorNotification('Введите имя участника');
@@ -209,7 +202,6 @@ function addCustomParticipant() {
   renderParticipants();
   updateTotals();
   initManualDistribution();
-  newParticipantInput.value = '';
 }
 
 function handlePercentageChange(e) {

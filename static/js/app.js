@@ -3,7 +3,7 @@ const socket = io();
 
 // Пользовательские настройки приложения
 const UserSettings = {
-    name: localStorage.getItem('name') || 'Jhon-Doe',
+    username: localStorage.getItem('username') || 'Jhon-Doe',
     theme: localStorage.getItem('theme') || 'light',
 }
 
@@ -45,13 +45,18 @@ socket.on('warning', (data) => {
     socket.emit('request_html', {'page':'error'});
 });
 
-function openFrontPage(){
+async function LoadApp(){
     app.innerHTML = ''
     socket.emit('request_html', {'page':'app'});
     socket.emit('request_html', {'page':'scanner'});
-    socket.emit('request_html', {'page':'distribution'});
+    socket.emit('request_html', {'page':'link'});  
+    socket.emit('request_html', {'page':'info'});
+    socket.emit('request_html', {'page':'developers'});   
     
     socket.emit('request_script', {'script':'theme'});
+    socket.emit('request_script', {'script':'username'});
     socket.emit('request_script', {'script':'scanner'});
-    socket.emit('request_script', {'script':'distribution'});
 }
+
+// socket.emit('request_html', {'page':'distribution'});
+// socket.emit('request_script', {'script':'distribution'});

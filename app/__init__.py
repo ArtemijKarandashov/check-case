@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_socketio import SocketIO
+from flask_cors import CORS
 from config import Config
 
 import os
@@ -7,7 +8,8 @@ import os
 
 app = Flask(__name__,static_folder=os.path.abspath("./static"))
 app.config.from_object(Config)
-socketio = SocketIO(app)
+CORS(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 data_dir = app.config['DATA_DIR_PATH']
 if not os.path.exists(data_dir):
