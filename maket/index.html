@@ -57,6 +57,15 @@
                 <div class="participants-list" id="participantsList">
                     <!-- Участники будут добавляться через JS -->
                 </div>
+                
+                <!-- Блок добавления новых участников -->
+                <div class="add-participant">
+                    <input type="text" id="newParticipantInput" placeholder="Введите имя участника">
+                    <button class="btn btn-outline" id="addParticipantBtn">
+                        <i class="fas fa-plus"></i> Добавить
+                    </button>
+                </div>
+                
                 <div class="distribution-summary">
                     <div class="total-percentage">
                         Всего распределено: <span id="totalPercentage">0</span>%
@@ -72,6 +81,13 @@
             
             <!-- Ручное распределение по позициям -->
             <div id="manualDistribution" class="distribution-section" style="display: none;">
+                <div class="participants-selection">
+                    <h3>Выберите участников:</h3>
+                    <div class="manual-participants-list" id="manualParticipantsList">
+                        <!-- Участники для ручного режима -->
+                    </div>
+                </div>
+                
                 <div class="bill-items" id="bill-items">
                     <!-- Позиции чека будут добавляться через JS -->
                 </div>
@@ -99,8 +115,9 @@
             <div class="instructions-content">
                 <ol class="instructions-list">
                     <li>Сфотографируйте или загрузите чек</li>
-                    <li>Система автоматически распознает участников</li>
+                    <li>Выберите или добавьте участников</li>
                     <li>Выберите тип распределения: процентное или по позициям</li>
+                    <li>Настройте параметры распределения</li>
                     <li>Подтвердите распределение</li>
                     <li>Поделитесь QR-кодом с друзьями</li>
                 </ol>
