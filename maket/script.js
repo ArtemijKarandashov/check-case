@@ -13,13 +13,15 @@ const AppData = {
         { name: "Доставка", price: 750 }
       ]
     },
-    theme: localStorage.getItem('theme') || 'light'
+    theme: localStorage.getItem('theme') || 'light',
+    customNames: false // Флаг ручного ввода имён
   };
   
   document.addEventListener('DOMContentLoaded', function() {
     // Получаем элементы DOM
     const themeSwitch = document.getElementById('checkbox');
     const participantsList = document.getElementById('participantsList');
+    const manualParticipantsList = document.getElementById('manualParticipantsList');
     const totalAmountEl = document.getElementById('totalAmount');
     const totalPercentageEl = document.getElementById('totalPercentage');
     const confirmDistributionBtn = document.getElementById('confirmDistributionBtn');
@@ -27,6 +29,8 @@ const AppData = {
     const scannerPreview = document.getElementById('scannerPreview');
     const scannerPlaceholder = document.getElementById('scannerPlaceholder');
     const scanBtn = document.getElementById('scanBtn');
+    const newParticipantInput = document.getElementById('newParticipantInput');
+    const addParticipantBtn = document.getElementById('addParticipantBtn');
     
     // Элементы для ручного распределения
     const percentageModeBtn = document.getElementById('percentageModeBtn');
@@ -50,6 +54,10 @@ const AppData = {
     receiptUpload.addEventListener('change', handleReceiptUpload);
     confirmDistributionBtn.addEventListener('click', confirmPercentageDistribution);
     calculateButton.addEventListener('click', calculateManualShares);
+    addParticipantBtn.addEventListener('click', addCustomParticipant);
+    newParticipantInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addCustomParticipant();
+    });
     
     percentageModeBtn.addEventListener('click', () => switchMode('percentage'));
     manualModeBtn.addEventListener('click', () => switchMode('manual'));
@@ -73,35 +81,174 @@ const AppData = {
         id: `participant_${index}`,
         name: name,
         percentage: index === 0 ? share + remainder : share,
-        amount: (AppData.receipt.totalAmount * (index === 0 ? share + remainder : share)) / 100
+        amount: (AppData.receipt.totalAmount * (index === 0 ? share + remainder : share)) / 100,
+        selected: true
       }));
     }
   
     function renderParticipants() {
       participantsList.innerHTML = '';
+      manualParticipantsList.innerHTML = '';
       
       AppData.participants.forEach(participant => {
+        // Рендер для процентного режима
         const participantEl = document.createElement('div');
         participantEl.className = 'participant-item';
+        
         participantEl.innerHTML = `
-          <div class="participant-name">${participant.name}</div>
+          <label class="participant-select">
+            <input type="checkbox" ${participant.selected ? 'checked' : ''} 
+                   data-id="${participant.id}" class="participant-checkbox">
+            <span class="participant-name">${participant.name}</span>
+          </label>
           <div class="percentage-control">
             <input type="number" class="percentage-input" 
                    min="0" max="100" 
                    value="${participant.percentage}" 
-                   data-id="${participant.id}">
+                   data-id="${participant.id}"
+                   ${participant.selected ? '' : 'disabled'}>
             <span>%</span>
           </div>
           <div class="participant-amount" data-id="${participant.id}">
             ${participant.amount.toFixed(2)} ₽
           </div>
+          ${AppData.customNames ? 
+            `<button class="manual-participant-remove" data-id="${participant.id}">
+              <i class="fas fa-times"></i>
+            </button>` : ''
+          }
         `;
+        
         participantsList.appendChild(participantEl);
         
         const input = participantEl.querySelector('.percentage-input');
         input.addEventListener('input', handlePercentageChange);
         input.addEventListener('blur', handlePercentageBlur);
+        
+        const checkbox = participantEl.querySelector('.participant-checkbox');
+        checkbox.addEventListener('change', (e) => {
+          const participant = AppData.participants.find(p => p.id === e.target.dataset.id);
+          if (participant) {
+            participant.selected = e.target.checked;
+            input.disabled = !e.target.checked;
+            if (!e.target.checked) participant.percentage = 0;
+            updateParticipant(participant.id, participant.percentage);
+            initManualDistribution(); // Обновляем ручной режим
+          }
+        });
+        
+        if (AppData.customNames) {
+          participantEl.querySelector('.manual-participant-remove')
+            .addEventListener('click', (e) => {
+              const id = e.currentTarget.dataset.id;
+              removeParticipant(id);
+            });
+        }
+        
+        // Рендер для ручного режима
+        const manualParticipantEl = document.createElement('div');
+        manualParticipantEl.className = 'manual-participant-item';
+        manualParticipantEl.innerHTML = `
+          <label>
+            <input type="checkbox" ${participant.selected ? 'checked' : ''} 
+                   data-id="${participant.id}" class="manual-participant-checkbox">
+            ${participant.name}
+          </label>
+        `;
+        
+        manualParticipantsList.appendChild(manualParticipantEl);
+        
+        const manualCheckbox = manualParticipantEl.querySelector('.manual-participant-checkbox');
+        manualCheckbox.addEventListener('change', (e) => {
+          const participant = AppData.participants.find(p => p.id === e.target.dataset.id);
+          if (participant) {
+            participant.selected = e.target.checked;
+            // Обновляем процентный режим
+            const percentageCheckbox = participantsList.querySelector(`.participant-checkbox[data-id="${participant.id}"]`);
+            if (percentageCheckbox) {
+              percentageCheckbox.checked = e.target.checked;
+              const percentageInput = participantsList.querySelector(`.percentage-input[data-id="${participant.id}"]`);
+              if (percentageInput) {
+                percentageInput.disabled = !e.target.checked;
+                if (!e.target.checked) participant.percentage = 0;
+                updateParticipant(participant.id, participant.percentage);
+              }
+            }
+            initManualDistribution(); // Обновляем позиции
+          }
+        });
       });
+    }
+  
+    function removeParticipant(id) {
+      AppData.participants = AppData.participants.filter(p => p.id !== id);
+      if (AppData.participants.length === 0) {
+        AppData.customNames = false;
+        AppData.receipt.participants = ["Кот", "Собака", "Сова", "Пингвин"];
+        initParticipants();
+      }
+      renderParticipants();
+      updateTotals();
+      initManualDistribution();
+    }
+  
+    function addCustomParticipant() {
+      const name = newParticipantInput.value.trim();
+      
+      if (!name) {
+        showErrorNotification('Введите имя участника');
+        return;
+      }
+      
+      // Если это первое ручное имя - очищаем стандартные
+      if (!AppData.customNames) {
+        AppData.participants = [];
+        AppData.customNames = true;
+        showNotification(
+          'Режим ручного ввода активирован', 
+          'fas fa-info-circle',
+          'var(--primary)',
+          'Теперь вы можете полностью управлять списком участников'
+        );
+      }
+      
+      // Проверяем дубликаты
+      if (AppData.participants.some(p => p.name === name)) {
+        showErrorNotification('Это имя уже добавлено');
+        return;
+      }
+      
+      // Добавляем нового участника
+      const newId = `participant_${Date.now()}`;
+      AppData.participants.push({
+        id: newId,
+        name: name,
+        percentage: 0,
+        amount: 0,
+        selected: true
+      });
+      
+      // Равномерно распределяем проценты
+      const selectedParticipants = AppData.participants.filter(p => p.selected);
+      const equalShare = Math.floor(100 / selectedParticipants.length);
+      const remainder = 100 - (equalShare * selectedParticipants.length);
+      
+      let counter = 0;
+      AppData.participants.forEach(p => {
+        if (p.selected) {
+          p.percentage = counter === 0 ? equalShare + remainder : equalShare;
+          p.amount = (AppData.receipt.totalAmount * p.percentage) / 100;
+          counter++;
+        } else {
+          p.percentage = 0;
+          p.amount = 0;
+        }
+      });
+      
+      renderParticipants();
+      updateTotals();
+      initManualDistribution();
+      newParticipantInput.value = '';
     }
   
     function handlePercentageChange(e) {
@@ -134,12 +281,13 @@ const AppData = {
     }
   
     function balancePercentages(changedId) {
-      const totalPercentage = AppData.participants.reduce((sum, p) => sum + p.percentage, 0);
+      const selectedParticipants = AppData.participants.filter(p => p.selected);
+      const totalPercentage = selectedParticipants.reduce((sum, p) => sum + p.percentage, 0);
       const difference = totalPercentage - 100;
       
       if (difference <= 0) return;
       
-      const otherParticipants = AppData.participants.filter(p => p.id !== changedId);
+      const otherParticipants = selectedParticipants.filter(p => p.id !== changedId);
       const totalOtherPercentage = otherParticipants.reduce((sum, p) => sum + p.percentage, 0);
       
       otherParticipants.forEach(p => {
@@ -148,7 +296,7 @@ const AppData = {
         p.amount = (AppData.receipt.totalAmount * p.percentage) / 100;
       });
       
-      const finalTotal = AppData.participants.reduce((sum, p) => sum + p.percentage, 0);
+      const finalTotal = selectedParticipants.reduce((sum, p) => sum + p.percentage, 0);
       if (finalTotal !== 100) {
         otherParticipants[0].percentage += (100 - finalTotal);
         otherParticipants[0].amount = (AppData.receipt.totalAmount * otherParticipants[0].percentage) / 100;
@@ -158,7 +306,8 @@ const AppData = {
     }
   
     function updateTotals() {
-      const totalPercentage = AppData.participants.reduce((sum, p) => sum + p.percentage, 0);
+      const selectedParticipants = AppData.participants.filter(p => p.selected);
+      const totalPercentage = selectedParticipants.reduce((sum, p) => sum + p.percentage, 0);
       totalPercentageEl.textContent = totalPercentage;
       totalAmountEl.textContent = AppData.receipt.totalAmount.toFixed(2);
       
@@ -169,6 +318,67 @@ const AppData = {
         totalPercentageEl.style.color = 'var(--error)';
         confirmDistributionBtn.disabled = true;
       }
+    }
+  
+    function initManualDistribution() {
+      billItemsContainer.innerHTML = AppData.receipt.items.map((item, index) => `
+        <div class="item">
+          <h3>${item.name} - ${item.price}₽</h3>
+          <label>Кто ел:</label>
+          <select id="owners-${index}" multiple>
+            ${AppData.participants
+              .filter(p => p.selected)
+              .map(p => `<option value="${p.name}" selected>${p.name}</option>`)
+              .join('')}
+          </select>
+        </div>
+      `).join('');
+    }
+  
+    function calculateManualShares() {
+      const shares = {};
+      let totalCalculated = 0;
+      let hasSelectedItems = false;
+      
+      AppData.receipt.items.forEach((item, index) => {
+        const select = document.getElementById(`owners-${index}`);
+        const selectedPeople = Array.from(select.selectedOptions).map(o => o.value);
+        const price = parseFloat(item.price) || 0;
+        
+        if (selectedPeople.length > 0) {
+          hasSelectedItems = true;
+          const sharePerPerson = price / selectedPeople.length;
+          totalCalculated += price;
+          
+          selectedPeople.forEach(person => {
+            shares[person] = (shares[person] || 0) + sharePerPerson;
+          });
+        }
+      });
+  
+      if (hasSelectedItems) {
+        const results = Object.entries(shares).map(([name, amount]) => ({
+          name: name,
+          amount: amount.toFixed(2)
+        }));
+  
+        updateResultsUI(results, totalCalculated);
+        showManualDistributionNotification(results, totalCalculated);
+      } else {
+        showErrorNotification('Выберите участников для хотя бы одной позиции');
+      }
+    }
+  
+    function updateResultsUI(results, total) {
+      resultsContainer.innerHTML = `
+        <h3>Итоговые суммы:</h3>
+        <div class="results-list">
+          ${results.map(r => `<p><strong>${r.name}:</strong> ${r.amount} ₽</p>`).join('')}
+        </div>
+        <div class="total-summary">
+          <strong>Общая сумма:</strong> ${total.toFixed(2)} ₽
+        </div>
+      `;
     }
   
     function handleReceiptUpload(e) {
@@ -227,11 +437,13 @@ const AppData = {
     }
   
     function confirmPercentageDistribution() {
-      const distribution = AppData.participants.map(p => ({
-        name: p.name,
-        percentage: p.percentage,
-        amount: p.amount.toFixed(2)
-      }));
+      const distribution = AppData.participants
+        .filter(p => p.selected)
+        .map(p => ({
+          name: p.name,
+          percentage: p.percentage,
+          amount: p.amount.toFixed(2)
+        }));
   
       showNotification(
         'Распределение подтверждено!',
@@ -240,67 +452,6 @@ const AppData = {
         distribution,
         AppData.receipt.totalAmount
       );
-    }
-  
-    function initManualDistribution() {
-      billItemsContainer.innerHTML = AppData.receipt.items.map((item, index) => `
-        <div class="item">
-          <h3>${item.name} - ${item.price}₽</h3>
-          <label>Кто ел:</label>
-          <select id="owners-${index}" multiple>
-            ${AppData.receipt.participants.map(p => `<option value="${p}">${p}</option>`).join('')}
-          </select>
-        </div>
-      `).join('');
-    }
-  
-    function calculateManualShares() {
-      const shares = {};
-      let totalCalculated = 0;
-      let hasSelectedItems = false;
-      
-      AppData.receipt.items.forEach((item, index) => {
-        const select = document.getElementById(`owners-${index}`);
-        const selectedPeople = Array.from(select.selectedOptions).map(o => o.value);
-        const price = parseFloat(item.price) || 0;
-        
-        if (selectedPeople.length > 0) {
-          hasSelectedItems = true;
-          const sharePerPerson = price / selectedPeople.length;
-          totalCalculated += price;
-          
-          selectedPeople.forEach(person => {
-            shares[person] = (shares[person] || 0) + sharePerPerson;
-          });
-        }
-      });
-  
-      if (hasSelectedItems) {
-        const results = Object.entries(shares).map(([name, amount]) => ({
-          name: name,
-          amount: amount.toFixed(2)
-        }));
-  
-        // Обновляем блок результатов в интерфейсе
-        updateResultsUI(results, totalCalculated);
-        
-        // Показываем уведомление
-        showManualDistributionNotification(results, totalCalculated);
-      } else {
-        showErrorNotification('Выберите участников для хотя бы одной позиции');
-      }
-    }
-  
-    function updateResultsUI(results, total) {
-      resultsContainer.innerHTML = `
-        <h3>Итоговые суммы:</h3>
-        <div class="results-list">
-          ${results.map(r => `<p><strong>${r.name}:</strong> ${r.amount} ₽</p>`).join('')}
-        </div>
-        <div class="total-summary">
-          <strong>Общая сумма:</strong> ${total.toFixed(2)} ₽
-        </div>
-      `;
     }
   
     function showManualDistributionNotification(results, total) {
@@ -340,7 +491,7 @@ const AppData = {
             ${items.map(item => `
               <div class="distribution-item">
                 <span>${item.name}</span>
-                <span>${item.percentage}%</span>
+                ${item.percentage ? `<span>${item.percentage}%</span>` : ''}
                 <span>${item.amount} ₽</span>
               </div>
             `).join('')}
