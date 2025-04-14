@@ -33,8 +33,10 @@ async function createNewSession(){
 }
 
 async function createInviteLink() {
-  socket.emit('request_html', {'page':'link'});  
-  socket.emit('request_script', {'script':'link'});
+  requestHTML('link','init');
+  requestScript('link','link.html')
+  sendHTMLRequests();
+  sendScriptRequests();
 }
 
 socket.on('send_session_key', (data) => {

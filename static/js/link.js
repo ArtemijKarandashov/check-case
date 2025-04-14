@@ -11,8 +11,10 @@ function generate_qr(url){
 }
 
 function loadDistr(){
-    socket.emit('request_html',{'page':'distribution'});
-    socket.emit('request_script',{'script':'distribution'});
+    requestHTML('distribution','init');
+    requestScript('distribution','distribution.html');
+    sendHTMLRequests();
+    sendScriptRequests();
 }
 
 toDistributionBtn.addEventListener('click', loadDistr);
