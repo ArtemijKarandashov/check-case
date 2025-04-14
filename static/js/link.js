@@ -1,3 +1,6 @@
+const toDistributionBtn = document.getElementById('continueToDistribution');
+const hostname = window.location.hostname;
+
 function generate_qr(url){
     const InviteQr = document.getElementById('invite');
     const linkContainer = document.getElementById('linkContainer')
@@ -7,4 +10,15 @@ function generate_qr(url){
     new QRCode(InviteQr, url);
 }
 
-generate_qr(window.location.hostname + "?key=" + AppData.sessionKey);
+function loadDistr(){
+    socket.emit('request_html',{'page':'distribution'});
+    socket.emit('request_script',{'script':'distribution'});
+}
+
+toDistributionBtn.addEventListener('click', loadDistr);
+
+if (hostname === 'localhost'){
+    generate_qr(hostname+":5000/?key=" + AppData.sessionKey)
+}else{
+    generate_qr(hostname + "/?key=" + AppData.sessionKey);
+}
