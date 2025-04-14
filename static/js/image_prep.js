@@ -230,8 +230,8 @@ async function onOpenCvReady() {
     window.cv = await window.cv;
 }
 
-document.querySelector('input[type=file]').onchange = function() {
-    const file = document.querySelector("input[type=file]").files[0];
+fileInput.onchange = function() {
+    const file = fileInput.files[0];
     const reader = new FileReader();
 
     reader.addEventListener(
@@ -247,10 +247,3 @@ document.querySelector('input[type=file]').onchange = function() {
         reader.readAsDataURL(file);
     }
 };
-
-async function main() {
-    await onOpenCvReady()
-    fileInput.disabled = false;
-}
-
-main();

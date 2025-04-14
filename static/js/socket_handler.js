@@ -1,8 +1,6 @@
-const user_name = document.getElementById('user_name');
-const session_key = document.getElementById('session_key');
-const session_data = document.getElementById('session_data');
             
 function print_response(data) {
+    const session_data = document.getElementById('session_data');
     const message = document.createElement('p');
     message.textContent = data.message;
     session_data.appendChild(message);
@@ -23,18 +21,21 @@ socket.on('warning', (data) => {
 });
     
 socket.on('login_success', (data) => {
+    const user_name = document.getElementById('user_name');
     console.log('Received:', data);
     print_response(data)
     user_name.innerHTML = `Logined us: ${data.name}`;
 });
 
 socket.on('logout_success', (data) => {
+    const user_name = document.getElementById('user_name');
     console.log('You are no longer connected');
     print_response(data)
     user_name.innerHTML = `Logined us: My name`;
 });
     
 socket.on('send_session_key', (data) => {
+    const session_key = document.getElementById('session_key');
     console.log('Received:', data);
     print_response(data)
     session_key.value = data.session_key;
@@ -58,6 +59,7 @@ function createSession() {
 }
             
 function joinSession() {
+    const session_key = document.getElementById('session_key');
     socket.emit('join_session', {
         "session_key": session_key.value
     });
