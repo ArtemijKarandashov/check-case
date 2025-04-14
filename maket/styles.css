@@ -222,6 +222,7 @@
     padding: 16px;
     background-color: var(--bg-body);
     border-radius: 8px;
+    position: relative;
   }
   
   .participant-name {
@@ -561,6 +562,69 @@
     to { opacity: 0; }
   }
   
+  /* Стили для ручного ввода участников */
+  .add-participant {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  #newParticipantInput {
+    flex-grow: 1;
+    padding: 12px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border);
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 16px;
+  }
+  
+  #newParticipantInput:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+  }
+  
+  .manual-participants-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  
+  .manual-participant {
+    padding: 8px 16px;
+    background-color: var(--primary-light);
+    border-radius: 20px;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  [data-theme="dark"] .manual-participant {
+    background-color: rgba(33, 160, 56, 0.2);
+  }
+  
+  .manual-participant-remove {
+    cursor: pointer;
+    color: var(--error);
+    background: none;
+    border: none;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+  }
+  
+  .manual-participant-remove:hover {
+    background-color: rgba(229, 57, 53, 0.1);
+  }
+  
   /* Адаптивность */
   @media (max-width: 768px) {
     .header-container {
@@ -615,6 +679,10 @@
     
     .btn-outline {
       width: 100%;
+    }
+    
+    .add-participant {
+      flex-direction: column;
     }
   }
   
