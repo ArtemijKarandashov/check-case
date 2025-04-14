@@ -1,12 +1,30 @@
 const app = document.getElementById('app');
 const socket = io();
 
-document.getElementById('sendMessage').addEventListener('click', function() {
-    // socket.emit('request_html', {'page':'DEBUG'});
-    // socket.emit('request_script', {'script':'image_prep'})
-    openFrontPage()
-});
+// Пользовательские настройки приложения
+const UserSettings = {
+    name: localStorage.getItem('name') || 'Jhon-Doe',
+    theme: localStorage.getItem('theme') || 'light',
+}
 
+// Основные данные приложения
+const AppData = {
+    receipt: {
+      totalAmount: 5730,
+      participants: ["Кот", "Собака", "Сова", "Пингвин"],
+      items: [
+        { name: "Стейк Рибай", price: 1500 },
+        { name: "Салат Цезарь", price: 450 },
+        { name: "Вино красное", price: 1200 },
+        { name: "Пиво крафтовое", price: 380 },
+        { name: "Десерт", price: 350 },
+        { name: "Чаевые", price: 700 },
+        { name: "Доставка", price: 750 }
+      ]
+    },
+    customNames: false // Флаг ручного ввода имён
+  };
+  
 socket.on('load_script', function(data) {
     const script = document.createElement('script');
     script.src = data.script;
@@ -14,10 +32,26 @@ socket.on('load_script', function(data) {
 });
 
 socket.on('load_html', function(data) {
-    app.innerHTML = data['page'];
+    app.insertAdjacentHTML('beforeend',data['page']);
+});
+
+socket.on('error', (data) => {
+    console.log(data)
+    socket.emit('request_html', {'page':'error'});
+})
+
+socket.on('warning', (data) => {
+    console.log(data)
+    socket.emit('request_html', {'page':'error'});
 });
 
 function openFrontPage(){
-    socket.emit('request_html', {'page':'front_page'});
-    socket.emit('request_script', {'script':'front_page'})
+    app.innerHTML = ''
+    socket.emit('request_html', {'page':'app'});
+    socket.emit('request_html', {'page':'scanner'});
+    socket.emit('request_html', {'page':'distribution'});
+    
+    socket.emit('request_script', {'script':'theme'});
+    socket.emit('request_script', {'script':'scanner'});
+    socket.emit('request_script', {'script':'distribution'});
 }

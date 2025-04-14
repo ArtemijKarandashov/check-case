@@ -9,16 +9,6 @@ function print_response(data) {
 socket.on('connect', () => {
     console.log('Connected to WebSocket');
 });
-
-socket.on('error', (data) => {
-    console.log('Received:', data);
-    print_response(data)
-})
-
-socket.on('warning', (data) => {
-    console.log('Received:', data);
-    print_response(data)
-});
     
 socket.on('login_success', (data) => {
     const user_name = document.getElementById('user_name');
