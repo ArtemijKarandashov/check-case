@@ -47,7 +47,7 @@ socket.on('send_session_key', (data) => {
 
 function loadHTML(pageData) {
     const pageContent = pageData.page;
-    app.insertAdjacentHTML('beforeend',pageContent);
+    app.insertAdjacentHTML(pageData.position,pageContent);
 }
 
 function loadScript(scriptData) {
@@ -99,7 +99,7 @@ function createDeferredPromise() {
     return { 'prom': promise, 'res':res };
 }
 
-function requestHTML(page,requirement){
+function requestHTML(page,requirement,position){
     const newPendingPromise = createDeferredPromise();
     let requirementStr = page + '.html'
     if (requirement === 'init'){
@@ -111,7 +111,11 @@ function requestHTML(page,requirement){
     }
 
     AppLoaded[requirementStr] = newPendingPromise;
-    AppHTMLRequests.push({'page':`${page}`,'requirement':`${requirement}`});
+    AppHTMLRequests.push({
+        'page':`${page}`,
+        'requirement':`${requirement}`,
+        'position':`${position}`
+    });
 }
 
 function requestScript(script,requirement){
@@ -126,7 +130,10 @@ function requestScript(script,requirement){
     }
 
     AppLoaded[requirementStr] = newPendingPromise;
-    AppScriptRequests.push({'script':`${script}`,'requirement':`${requirement}`});
+    AppScriptRequests.push({
+        'script':`${script}`,
+        'requirement':`${requirement}`
+    });
 }
 
 function sendHTMLRequests(){
@@ -144,11 +151,10 @@ function sendScriptRequests(){
 }
 
 function loadApp(){
-    app.innerHTML = ''
-    requestHTML('app','init');
-    requestHTML('scanner','app.html');
-    requestHTML('info','scanner.html');
-    requestHTML('developers','info.html');
+    app.innerHTML = '';
+    requestHTML('scanner','init','beforeend');
+    requestHTML('info','scanner.html','beforeend');
+    requestHTML('developers','info.html','beforeend');
 
     requestScript('theme','developers.html');
     requestScript('username','theme.js');
@@ -158,8 +164,8 @@ function loadApp(){
 }
 
 function loadAppWithJoin(session_key){
-    app.innerHTML = ''
-    requestHTML('app','init');
+    app.innerHTML = '';
+    requestHTML('app','init','beforeend');
 
     requestScript('theme','app.html');
     requestScript('username','theme.js');
@@ -167,20 +173,17 @@ function loadAppWithJoin(session_key){
     sendHTMLRequests();
     sendScriptRequests();
 
-    socket.emit('login',        {"name":''})
+    socket.emit('login', {"name":''});
     socket.emit('join_session', {"session_key": session_key});
 }
 
 function loadDebug(){
-    app.innerHTML = ''
-    requestHTML('app','init');
-    requestHTML('DEBUG','app.html');
+    app.innerHTML = '';
+    requestHTML('app','init','beforeend');
+    requestHTML('DEBUG','app.html','beforeend');
 
     requestScript('theme','DEBUG.html');
     requestScript('socket_handler','theme.js');
     sendHTMLRequests();
     sendScriptRequests();
 }
-
-// socket.emit('request_html', {'page':'distribution'});
-// socket.emit('request_script', {'script':'distribution'});

@@ -16,7 +16,6 @@ const calculateButton = document.getElementById('calculate-button');
 const resultsContainer = document.getElementById('results');
 
 // Инициализация
-
 initParticipants();
 renderParticipants();
 updateTotals();

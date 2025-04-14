@@ -11,7 +11,7 @@ function generate_qr(url){
 }
 
 function loadDistr(){
-    requestHTML('distribution','init');
+    requestHTML('distribution','init','afterbegin');
     requestScript('distribution','distribution.html');
     sendHTMLRequests();
     sendScriptRequests();

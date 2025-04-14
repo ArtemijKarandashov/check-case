@@ -33,7 +33,7 @@ async function createNewSession(){
 }
 
 async function createInviteLink() {
-  requestHTML('link','init');
+  requestHTML('link','init','afterbegin');
   requestScript('link','link.html')
   sendHTMLRequests();
   sendScriptRequests();
