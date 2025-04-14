@@ -116,7 +116,6 @@
 
 
         ///////////////////////////////// here
-        console.log(dst);
         drawImages([original, dst]);
         return dst;
 
@@ -130,9 +129,9 @@
     function aligner(img) {
         delPrevCanvases();
 
-        let src = cv.imread(img);
-        // let src = new cv.Mat();
-        // cv.cvtColor(img, src, cv.COLOR_RGBA2RGB);
+        // let src = cv.imread(img);
+        let src = new cv.Mat();
+        cv.cvtColor(img, src, cv.COLOR_RGBA2RGB);
         
         let gray = new cv.Mat();
         let edges = new cv.Mat();
@@ -182,8 +181,6 @@
                 weightMap[yy] += w;
             }
         }
-
-        console.log(angleMap);
 
         for (let y = 0; y < src.rows; y++) {
             if (weightMap[y] > 0) {
@@ -258,7 +255,7 @@
 
         document.getElementById('upload').addEventListener('change', (event) => {
                 let imgElement = new Image();
-                imgElement.onload = () => aligner_v1(imgElement); // extractImage(imgElement)
+                imgElement.onload = () => aligner(extractImage(imgElement)); // extractImage(imgElement)
                 imgElement.src = URL.createObjectURL(event.target.files[0]);
             }
         );
