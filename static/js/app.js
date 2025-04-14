@@ -165,9 +165,8 @@ function loadApp(){
 
 function loadAppWithJoin(session_key){
     app.innerHTML = '';
-    requestHTML('app','init','beforeend');
 
-    requestScript('theme','app.html');
+    requestScript('theme','init');
     requestScript('username','theme.js');
 
     sendHTMLRequests();
@@ -179,8 +178,7 @@ function loadAppWithJoin(session_key){
 
 function loadDebug(){
     app.innerHTML = '';
-    requestHTML('app','init','beforeend');
-    requestHTML('DEBUG','app.html','beforeend');
+    requestHTML('DEBUG','init','beforeend');
 
     requestScript('theme','DEBUG.html');
     requestScript('socket_handler','theme.js');

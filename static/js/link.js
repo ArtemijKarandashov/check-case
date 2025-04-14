@@ -2,12 +2,19 @@ const toDistributionBtn = document.getElementById('continueToDistribution');
 const hostname = window.location.hostname;
 
 function generate_qr(url){
-    const InviteQr = document.getElementById('invite');
-    const linkContainer = document.getElementById('linkContainer')
-    const inviteLink = `<a href=${url}>${url}</a>`
-    InviteQr.innerHTML = '';
-    linkContainer.innerHTML = inviteLink
-    new QRCode(InviteQr, url);
+    const qrContainer = document.getElementById('qrContainer');
+    const linkContainer = document.getElementById('linkContainer');
+    const inviteLink = `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+    const qrCodeSize = Math.min(qrContainer.offsetWidth,qrContainer.offsetHeight)-30; // -2*margin(qr-code)
+    qrContainer.innerHTML = '';
+
+    linkContainer.innerHTML = inviteLink;
+    new QRCode(qrContainer, {
+        text: url,
+        width: qrCodeSize,
+        height: qrCodeSize,
+        correctLevel: QRCode.CorrectLevel.H,
+      });
 }
 
 function loadDistr(){
