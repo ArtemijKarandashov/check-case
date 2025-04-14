@@ -53,6 +53,7 @@ class ConnectionManager(metaclass=Singleton):
         self.db_cur.execute("PRAGMA foreign_keys = ON")
         self.db_con.commit()
         self._reset_tables()
+        self.db_cur.close()
 
         print("Connection manager is ready to handle user requests")
     
@@ -86,61 +87,79 @@ class ConnectionManager(metaclass=Singleton):
 
     # --- Session methods ---
 
-    def create_session(self,stype: str ='DEFAULT',dtype: str ='PROCENTAGE'):
+    def create_session(self,stype: str ='DEFAULT'):
         """Creates a new session object and appends it's data to the provided database."""
 
-        new_session = Session(stype=stype,dtype=dtype)
+        new_session = Session(stype=stype)
+        cursor = self.db_con.cursor()
 
         if self.session_exists(new_session.key) == True:
             logger.warning(f"Session with key {new_session.key} already exists. Session creation abandoned.") 
             del new_session
             return None
 
-        self.db_cur.execute("INSERT INTO session VALUES(NULL,?,?,?,?)", (new_session.key,0,stype,dtype))
+        cursor.execute("INSERT INTO session VALUES(NULL,?,?,?)", (new_session.key,0,stype,))
         self.db_con.commit()
+        cursor.close()
 
         return new_session
 
     def delete_session(self, session_key: int):
         """Removes the session with the provided key from the database."""
 
+        cursor = self.db_con.cursor()
+
         if self.session_exists(session_key) == False:
             logger.warning(f"Session with key {session_key} does not exist. Nothing was deleted.")
             return None
 
-        self.db_cur.execute("DELETE FROM session WHERE session_key = ?", (session_key,))
+        cursor.execute("DELETE FROM session WHERE session_key = ?", (session_key,))
         self.db_con.commit()
+        cursor.close()
 
     def session_exists(self, session_key: str):
         """Checks if the session with the provided key exists in the database."""
 
-        self.db_cur.execute("SELECT session_key FROM session")
-        existing_keys = list(map(lambda x: x[0], self.db_cur.fetchall()))
+        cursor = self.db_con.cursor()
+
+        cursor.execute("SELECT session_key FROM session")
+        existing_keys = list(map(lambda x: x[0], cursor.fetchall()))
         
+        cursor.close()
         return session_key in existing_keys
 
     def get_users_in_session(self, session_key: str):
         """Returns a list of user ids that are connected to the session with the provided key."""
 
+        cursor = self.db_con.cursor()
+
         if self.session_exists(session_key) == False:
             logger.warning(f"Session with key {session_key} does not exist. Cannot get users.")
             return None
 
-        self.db_cur.execute("SELECT user_id FROM connection WHERE session_key = ?", (session_key,))
-        return list(map(lambda x: x[0], self.db_cur.fetchall()))
+        cursor.execute("SELECT user_id FROM connection WHERE session_key = ?", (session_key,))
+        result = list(map(lambda x: x[0], cursor.fetchall()))
+        cursor.close()
+        return result
 
     def get_session_data(self, session_key: str):
-        """Returns all values of given session attributes."""
+        """Returns all values of attributes of given session."""
+
+        cursor = self.db_con.cursor()
 
         if not self.session_exists(session_key):
             logger.warning(f"Session with key {session_key} does not exist. Returned data is empty")
             return ()
 
-        self.db_cur.execute("SELECT * FROM session WHERE session_key = ?", (session_key,))
-        return self.db_cur.fetchone()
+        cursor.execute("SELECT * FROM session WHERE session_key = ?", (session_key,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result
     
     def update_session_status(self, session_key: str, status: int):
         """Updates session status."""
+
+        cursor = self.db_con.cursor()
 
         if status > 2:
             logger.warning(f"Wrong session status {status} provided for session {session_key}.")
@@ -154,14 +173,16 @@ class ConnectionManager(metaclass=Singleton):
             logger.warning(f"Session with key {session_key} does not exist. Cannot update status")
             return ()    
 
-        self.db_cur.execute("UPDATE session SET status = ? WHERE session_key = ?", (status,session_key))
+        cursor.execute("UPDATE session SET status = ? WHERE session_key = ?", (status,session_key))
         self.db_con.commit()
+        cursor.close()
 
     # --- User methods ---
 
     def create_user(self, name: str = None, type: str = None, sid: str = None):
         """Creates a new user object and appends it's data to the provided database."""
 
+        cursor = self.db_con.cursor()
         new_user = User(name=name, type=type, sid=sid)
 
         if self.sid_exists(new_user.sid) == True and type !='PHANTOM':
@@ -169,69 +190,90 @@ class ConnectionManager(metaclass=Singleton):
             del new_user
             return None
 
-        self.db_cur.execute("INSERT INTO user VALUES(NULL,?,?,?)", (new_user.name, new_user.type, new_user.sid))
-        last_id = self.db_cur.lastrowid
+        cursor.execute("INSERT INTO user VALUES(NULL,?,?,?)", (new_user.name, new_user.type, new_user.sid))
+        last_id = cursor.lastrowid
         new_user.id = last_id
         self.db_con.commit()
+        cursor.close()
 
         return new_user
 
     def delete_user(self, user_id: int):
         """Deletes the user with the provided id from the database."""
         
+        cursor = self.db_con.cursor()
+
         if self.user_exists(user_id) == False:
             logger.warning(f"User with id {user_id} does not exist. Nothing was deleted.")
             print('aaaaaasasd')
             return None
 
-        self.db_cur.execute("DELETE FROM user WHERE user_id = ?", (user_id,))
+        cursor.execute("DELETE FROM user WHERE user_id = ?", (user_id,))
         self.db_con.commit()
+        cursor.close()
     
     def user_exists(self, user_id: int):
         """Checks if the user with the provided user_id exists in the database."""
 
-        self.db_cur.execute("SELECT user_id FROM user")
-        existing_ids = list(map(lambda x: x[0], self.db_cur.fetchall()))
+        cursor = self.db_con.cursor()
+
+        cursor.execute("SELECT user_id FROM user")
+        existing_ids = list(map(lambda x: x[0], cursor.fetchall()))
+        cursor.close()
 
         return user_id in existing_ids
 
     def sid_exists(self, sid: str):
         """Checks if the user with the provided sid (websocket session id) exists in the database."""
 
-        self.db_cur.execute("SELECT sid FROM user")
-        existing_sids = list(map(lambda x: x[0], self.db_cur.fetchall()))
+        cursor = self.db_con.cursor()
+
+        cursor.execute("SELECT sid FROM user")
+        existing_sids = list(map(lambda x: x[0], cursor.fetchall()))
+        cursor.close()
 
         return sid in existing_sids
 
     def get_user_id_by_sid(self, sid: str):
         """Returns the id of the user with the provided sid (websocket session id)."""
 
+        cursor = self.db_con.cursor()
+
         if self.sid_exists(sid) == False:
             logger.warning(f"User with sid {sid} does not exist. Cannot provide user id.")
             return None
 
-        self.db_cur.execute("SELECT user_id FROM user WHERE sid = ?", (sid,))
-        return self.db_cur.fetchone()[0]
+        cursor.execute("SELECT user_id FROM user WHERE sid = ?", (sid,))
+        result = cursor.fetchone()[0]
+        cursor.close()
+        return result
 
     def get_user_data(self, user_id: int):
         """Returns all data from the database for the user with the provided id."""
+
+        cursor = self.db_con.cursor()
 
         if self.user_exists(user_id) == False:
             logger.warning(f"User with id {user_id} does not exist. Returned data is empty.")
             return ()
 
-        self.db_cur.execute("SELECT * FROM user WHERE user_id = ?", (user_id,))
-        return self.db_cur.fetchone()
+        cursor.execute("SELECT * FROM user WHERE user_id = ?", (user_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        return result
 
     def get_users_session(self, user_id: int):
         """Returns user's current session"""
         
+        cursor = self.db_con.cursor()
+
         if not self.user_exists(user_id):
             logger.warning(f"User with id {user_id} does not exist.")
             return None
 
-        self.db_cur.execute("SELECT session_key FROM connection WHERE user_id = ?", (user_id,))
-        found_keys = self.db_cur.fetchone()
+        cursor.execute("SELECT session_key FROM connection WHERE user_id = ?", (user_id,))
+        found_keys = cursor.fetchone()
+        cursor.close()
 
         if found_keys == None:
             return None
@@ -242,12 +284,15 @@ class ConnectionManager(metaclass=Singleton):
         """Changes current user type to either 'CLIENT', 'HOST' or 'PHANTOM'"""
         # TODO: Check valid types
 
+        cursor = self.db_con.cursor()
+
         if not self.user_exists(user_id):
             logger.warning(f"User with id {user_id} does not exist. Cannot update type.")
             return None
 
-        self.db_cur.execute("UPDATE user SET type = ? WHERE user_id = ?", (type,user_id))
+        cursor.execute("UPDATE user SET type = ? WHERE user_id = ?", (type,user_id))
         self.db_con.commit()
+        cursor.close()
 
     # --- Connection methods ---
 
@@ -263,10 +308,12 @@ class ConnectionManager(metaclass=Singleton):
             Connection: A new connection object that represents binding between the session and the user.
         """
 
+        cursor = self.db_con.cursor()
+
         new_connection = Connection(session_key, user_id)
 
-        self.db_cur.execute("SELECT user_id FROM connection")
-        existing_ids = list(map(lambda x: x[0], self.db_cur.fetchall()))
+        cursor.execute("SELECT user_id FROM connection")
+        existing_ids = list(map(lambda x: x[0], cursor.fetchall()))
 
         if not self.user_exists(new_connection.user_id):
             logger.warning(f"User with id {new_connection.user_id} does not exist. Connection request denied.")
@@ -280,23 +327,27 @@ class ConnectionManager(metaclass=Singleton):
             logger.warning(f"User with id {user_id} is already connected. Connection request denied.")
             return None
 
-        self.db_cur.execute("INSERT INTO connection VALUES(NULL,?,?)", (new_connection.session_key, new_connection.user_id))
+        cursor.execute("INSERT INTO connection VALUES(NULL,?,?)", (new_connection.session_key, new_connection.user_id))
         self.db_con.commit()
+        cursor.close()
 
         return new_connection
 
     def delete_connection(self, connection_id: int):
         """Deletes the connection with the provided id from the database."""
 
-        self.db_cur.execute("SELECT connection_id FROM connection")
-        existing_ids = list(map(lambda x: x[0], self.db_cur.fetchall()))
+        cursor = self.db_con.cursor()
+
+        cursor.execute("SELECT connection_id FROM connection")
+        existing_ids = list(map(lambda x: x[0], cursor.fetchall()))
 
         if connection_id not in existing_ids:
             logger.warning(f"Connection with id {connection_id} does not exist. Nothing was deleted.")
             return None
 
-        self.db_cur.execute("DELETE FROM connection WHERE connection_id = ?", (connection_id,))
+        cursor.execute("DELETE FROM connection WHERE connection_id = ?", (connection_id,))
         self.db_con.commit()
+        cursor.close()
 
 
 class DatabaseSetupException(Exception):

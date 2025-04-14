@@ -16,10 +16,27 @@ function handleReceiptUpload(e) {
       scannerPreview.style.display = 'block';
       scannerPlaceholder.style.display = 'none';
       scanBtn.style.display = 'none';
-  
-      setTimeout(() => {
-        updateReceiptData();
-      }, 1000);
     };
     reader.readAsDataURL(file);
-  }
+    createNewSession();
+}
+
+async function createNewSession(){
+  socket.emit('login',{
+    "name":UserSettings.username
+  });
+
+  socket.emit('create_session', {
+    "type":'DEFAULT',
+    "ph_users":0
+  });
+}
+
+async function createInviteLink() {
+  socket.emit('request_html', {'page':'link'});  
+  socket.emit('request_script', {'script':'link'});
+}
+
+socket.on('send_session_key', (data) => {
+  createInviteLink();
+});

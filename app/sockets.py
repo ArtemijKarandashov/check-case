@@ -112,7 +112,6 @@ def handle_process_check(data):
 
     session_status = int(session_data[2])
     session_stype = session_data[3]
-    session_dtype = session_data[4]
 
     if _con_manager.sid_exists(session['sid']) == False:
         emit('error', {'message': 'You are not logged in!'}, room=session['sid'])
@@ -131,32 +130,23 @@ def handle_process_check(data):
     _con_manager.update_session_status(session_key,1)
     new_thread.join()
 
-    if session_dtype == 'PROCENTAGE':
-        total_sum = new_thread.total_sum
-        names = {}
+    total_sum = new_thread.total_sum
+    names = {}  # User_id: Name
+    receipt = {}    # Position: Price
 
-        users = _con_manager.get_users_in_session(session_key)
-        for user_id in users:
-            user_data = _con_manager.get_user_data(user_id)
-            names[user_id]=user_data[1]
+    users = _con_manager.get_users_in_session(session_key)
+    for user_id in users:
+        user_data = _con_manager.get_user_data(user_id)
+        names[user_id]=user_data[1]
 
-        _con_manager.update_session_status(session_key,2)
+    _con_manager.update_session_status(session_key,2)
 
-        emit('check_result', {
-            'message': 'Check processed!',
-            "type":session_dtype,
-            "total_sum":total_sum,
-            "names":names
-            }, room=session['sid'])
-    elif session_dtype == 'MANUAL':
-        logger.warning("Incomplete feature")
-
-        emit('check_result', {
-            'message': 'Check processed!',
-            "type":session_dtype,
-            "total_sum":total_sum,
-            "names":names
-            }, room=session['sid'])
+    emit('check_result', {
+        'message': 'Check processed!',
+        "total_sum":total_sum,
+        "names":names,
+        "receipt":receipt
+        }, room=session['sid'])
 
 
 @socketio.on('all_users_joined')
@@ -204,24 +194,6 @@ def conect_user(session_key: str, user_id: int):
         if user_data[2] != 'PHANTOM' and connected_user_data[2] != 'PHANTOM':
             emit('user_connected', {'message': 'User connected!','name':connected_user_data[1]}, room=user_data[3])
 
-
-def set_distribution_type(dtype: str, session_key: str):
-    VALID_DISTRIBUTION_TYPES = ['EVEN', 'PROCENTAGE','MANUAL']
-
-    session_data = _con_manager.get_session_data(session_key)
-
-    if session_data[2] != 2:
-        emit('error', {'message': 'Session is not processed!'}, room=session['sid'])
-        return None
-
-    if dtype not in VALID_DISTRIBUTION_TYPES:
-        emit('error', {'message': 'Wrong distribution type!'}, room=session['sid'])
-        return None
-    
-    _con_manager.update_session_status(session_key,3)
-    
-    # TODO: Redirect HOST to distribution page
-    #       Redirect CLIENTs to waiting page
 
 
 def logout_user():
@@ -273,13 +245,12 @@ def create_phantom_user(session_key: str):
     ph_user = _con_manager.create_user(type = "PHANTOM")
     conect_user(session_key, ph_user.id)
 
-
 @socketio.on('request_html')
 def handle_message(data):
     page = data['page'].replace('.','')
-    emit('load_html',{'page':render_template(f'{page}.html')}, room=session['sid'])
+    emit('load_html',{'page':render_template(f'{page}.html'),'title':f"{data['page']}.html"}, room=session['sid'])
 
 @socketio.on('request_script')
 def handle_request_script(data):
     script_name = 'js/' + data['script'].replace('.','') + ".js"
-    emit('load_script', {'script': url_for('static', filename=script_name)}, room=session['sid'])
+    emit('load_script', {'script': url_for('static', filename=script_name),'title':f"{data['script']}.js"}, room=session['sid'])

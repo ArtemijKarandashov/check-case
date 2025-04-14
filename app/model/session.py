@@ -3,9 +3,8 @@ from Crypto import Random
 from random import randint
 
 class Session:
-    def __init__(self,stype='DEFAULT',dtype='EVEN'):
+    def __init__(self,stype='DEFAULT'):
         self.type = stype
-        self.dtype = dtype
         self.key, self.public_key = self._mock_key_generator()
 
     def _key_generator(self,bits=2048):
