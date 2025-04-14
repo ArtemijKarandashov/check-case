@@ -248,9 +248,9 @@ def create_phantom_user(session_key: str):
 @socketio.on('request_html')
 def handle_message(data):
     page = data['page'].replace('.','')
-    emit('load_html',{'page':render_template(f'{page}.html'),'title':f"{data['page']}.html"}, room=session['sid'])
+    emit('load_html',{'page':render_template(f'{page}.html'),'title':f"{data['page']}.html",'requirement':data['requirement']}, room=session['sid'])
 
 @socketio.on('request_script')
 def handle_request_script(data):
     script_name = 'js/' + data['script'].replace('.','') + ".js"
-    emit('load_script', {'script': url_for('static', filename=script_name),'title':f"{data['script']}.js"}, room=session['sid'])
+    emit('load_script', {'script': url_for('static', filename=script_name),'title':f"{data['script']}.js",'requirement':data['requirement']}, room=session['sid'])

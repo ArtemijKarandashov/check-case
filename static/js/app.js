@@ -1,4 +1,5 @@
 const app = document.getElementById('app');
+const initPendingPromise = createDeferredPromise();
 const socket = io();
 
 // Пользовательские настройки приложения
@@ -26,7 +27,12 @@ const AppData = {
     sessionKey: 'None'
   };
 
-let LoadQueue = []
+let AppLoaded = {
+    'init':initPendingPromise
+};
+
+let AppHTMLRequests = [];
+let AppScriptRequests = [];
 
 socket.on('error', (data) => {
     console.log(data)
@@ -43,72 +49,112 @@ socket.on('send_session_key', (data) => {
 });
 
 function loadHTML(pageData) {
-    const pageContent = pageData.page
-    return new Promise((resolve) => {
-        let currentPromise = LoadQueue[0] === undefined ? new Promise((resolve) => { resolve() }) : LoadQueue.pop();
-        console.log(currentPromise);
-        currentPromise.then( () => {
-            app.insertAdjacentHTML('beforeend',pageContent);
-            resolve();
-        });
-    });
+    const pageContent = pageData.page;
+    app.insertAdjacentHTML('beforeend',pageContent);
 }
 
 function loadScript(scriptData) {
     const scriptPath = scriptData.script
-    return new Promise((resolve, reject) => {
-        let currentPromise = LoadQueue[0] === undefined ? new Promise((resolve) => { resolve() }) : LoadQueue.pop();
-            currentPromise.then( () => {
-            const script = document.createElement('script');
-            script.src = scriptPath;
+    const script = document.createElement('script');
+    script.src = scriptPath;
 
-            script.onload = () => {
-                resolve();
-            };
-
-            script.onerror = () => {
-                reject(new Error(`Failed to load script ${scriptPath}`));
-            };
-
-            document.body.appendChild(script);
-        });
-    });
+    document.body.appendChild(script);
 }
 
-socket.on('load_script', function(data) {
-    const newPromise = loadScript(data)
-        .then(() => {
-            console.log(`${data.title} loaded successfully`);
-        })
-        .catch((error) => {
-            console.error(error);
-        });
-    LoadQueue.push(newPromise);
+socket.on('load_script', async function(data) {
+    let requirement = data.requirement;
+    const requiredPromise = AppLoaded[requirement];
+    requiredPromise['prom'].then( () => {
+        loadScript(data);
+        const pendingPromise = AppLoaded[data.title];
+        const resolveFunc = pendingPromise['res'];
+        console.log(AppLoaded);
+        console.log(pendingPromise);
+        
+        setTimeout(() => {
+            resolveFunc();
+        }, 0);
+    });
 });
 
-socket.on('load_html', function(data) {
-    const newPromise = loadHTML(data)
-        .then(() => {
-            console.log(`${data.title} loaded successfully`);
-        })
-        .catch((error) => {
-            console.error(error);
-        });
-    LoadQueue.push(newPromise)
+socket.on('load_html', async function(data) {
+    let requirement = data.requirement;
+    const requiredPromise = AppLoaded[requirement];
+    requiredPromise['prom'].then( () => {
+        loadHTML(data);
+        const pendingPromise = AppLoaded[data.title];
+        const resolveFunc = pendingPromise['res'];
+        console.log(AppLoaded);
+        console.log(pendingPromise);
+        setTimeout(() => {
+            resolveFunc();
+        }, 0);
+    });
 });
+
+function createDeferredPromise() {
+    let res;
+    
+    const promise = new Promise((resolve) => {
+        res = resolve;
+    });
+
+    return { 'prom': promise, 'res':res };
+}
+
+function requestHTML(page,requirement){
+    const newPendingPromise = createDeferredPromise();
+    let requirementStr = page + '.html'
+    AppLoaded[requirementStr] = newPendingPromise;
+    AppHTMLRequests.push({'page':`${page}`,'requirement':`${requirement}`});
+}
+
+function requestScript(script,requirement){
+    const newPendingPromise = createDeferredPromise();
+    let requirementStr = script + '.js';
+    AppLoaded[requirementStr] = newPendingPromise;
+    AppScriptRequests.push({'script':`${script}`,'requirement':`${requirement}`});
+}
+
+function sendHTMLRequests(){
+    for (let i = 0; i < AppHTMLRequests.length; i++){
+        console.log('sending load request for');
+        console.log(AppHTMLRequests[i]);
+        socket.emit('request_html',AppHTMLRequests[i]);
+    }
+    AppHTMLRequests = [];
+}
+
+function sendScriptRequests(){
+    for (let i = 0; i < AppScriptRequests.length; i++){
+        console.log('sending load request for');
+        console.log(AppHTMLRequests[i]);
+        socket.emit('request_script',AppScriptRequests[i]);
+    }
+    AppScriptRequests = [];
+}
 
 function loadApp(){
     app.innerHTML = ''
-    socket.emit('request_html', {'page':'app'});
+    // socket.emit('request_html', {'page':'app'});
     
-    socket.emit('request_html', {'page':'scanner'})
-    socket.emit('request_html', {'page':'info'})
-    socket.emit('request_html', {'page':'developers'})
+    // socket.emit('request_html', {'page':'scanner'})
+    // socket.emit('request_html', {'page':'info'})
+    // socket.emit('request_html', {'page':'developers'})
     
-    socket.emit('request_script', {'script':'theme'});
-    socket.emit('request_script', {'script':'username'});
-    socket.emit('request_script', {'script':'scanner'});
-    
+    // socket.emit('request_script', {'script':'theme'});
+    // socket.emit('request_script', {'script':'username'});
+    // socket.emit('request_script', {'script':'scanner'});
+    requestHTML('app','init');
+    requestHTML('scanner','app.html');
+    requestHTML('info','scanner.html');
+    requestHTML('developers','info.html');
+
+    requestScript('theme','developers.html');
+    requestScript('username','theme.js');
+    requestScript('scanner','username.js');
+    sendHTMLRequests();
+    sendScriptRequests();
 }
 
 function loadAppWithJoin(session_key){
@@ -132,3 +178,6 @@ function loadDebug(){
 
 // socket.emit('request_html', {'page':'distribution'});
 // socket.emit('request_script', {'script':'distribution'});
+setTimeout(() => {
+    initPendingPromise['res']();
+}, 0);
