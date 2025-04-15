@@ -16,6 +16,8 @@ function handleReceiptUpload(e) {
       scannerPreview.style.display = 'block';
       scannerPlaceholder.style.display = 'none';
       scanBtn.style.display = 'none';
+      let result = reader.result;
+      AppData.base64Image = result;
     };
     reader.readAsDataURL(file);
     createNewSession();
@@ -34,9 +36,12 @@ async function createNewSession(){
 
 async function createInviteLink() {
   requestHTML('link','init','afterbegin');
-  requestScript('link','link.html')
+  requestScript('link','link.html');
+
   sendHTMLRequests();
   sendScriptRequests();
+
+  socket.emit('process_check',{'image':AppData.base64Image})
 }
 
 socket.on('send_session_key', (data) => {

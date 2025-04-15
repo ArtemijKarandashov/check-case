@@ -21,25 +21,9 @@
     <script src="{{ url_for('static', filename='js/qrcode.js') }}"></script>
 </head>
 <body>
-    <header class="header">
-        <div class="header-container">
-            <i class="fas fa-receipt header-logo"></i>
-            <div class="app-name">ЧекСканер</div>
-            <div class="username-wrapper">
-                <input maxlength="12" type="text" class="setUserName" id="setUserName" placeholder="Username" />
-            </div>
-            <div class="theme-switch-wrapper">
-                <label class="theme-switch" for="checkbox">
-                    <input type="checkbox" id="checkbox" title="Темная тема" />
-                    <div class="slider round"></div>
-                </label>
-            </div>
-        </div>
-    </header>
     <div class="main-container" id="app">
         <h1>Please wait! App is loading...</h1>
     </div>
-
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script>
         const currentURL = window.location.href;

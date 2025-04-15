@@ -18,8 +18,9 @@ function generate_qr(url){
 }
 
 function loadDistr(){
-    requestHTML('distribution','init','afterbegin');
+    requestHTML('distribution','doneOCR','afterbegin');
     requestScript('distribution','distribution.html');
+    
     sendHTMLRequests();
     sendScriptRequests();
 }

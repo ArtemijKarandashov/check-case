@@ -237,7 +237,7 @@ fileInput.onchange = function() {
     reader.addEventListener(
         "load",
         () => {
-        result = reader.result;
+        let result = reader.result;
         base64Output = result;
         },
         false,

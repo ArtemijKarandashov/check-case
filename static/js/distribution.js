@@ -146,7 +146,7 @@ function removeParticipant(id) {
   initManualDistribution();
 }
 
-function addCustomParticipant(name) {
+function addCustomParticipant(name,id) {
   
   if (!name) {
     showErrorNotification('Введите имя участника');
@@ -172,7 +172,7 @@ function addCustomParticipant(name) {
   }
   
   // Добавляем нового участника
-  const newId = `participant_${Date.now()}`;
+  const newId = id;
   AppData.participants.push({
     id: newId,
     name: name,
@@ -333,9 +333,9 @@ function updateResultsUI(results, total) {
   `;
 }
 
-function updateReceiptData() {
+function updateReceiptData(totalSum) {
   AppData.receipt = {
-    totalAmount: 6200,
+    totalAmount: totalSum,
     participants: [...AppData.receipt.participants],
     items: [
       ...AppData.receipt.items,
@@ -471,7 +471,13 @@ function setupNotificationClose(notification) {
   });
 }
 
-
-function init(){
-      console.log('Page ready')
+function loadDataOCR(){
+  socket.emit('getDataOCR',{'session_key':AppData.sessionKey});
 }
+
+function setDistributionData(){
+  addCustomParticipant(names[1],1);
+  updateReceiptData(AppData.totalAmount);
+}
+
+setDistributionData();

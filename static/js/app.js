@@ -24,10 +24,18 @@ const AppData = {
       ]
     },
     customNames: false, // Флаг ручного ввода имён
+    base64Image: String,
     sessionKey: 'None'
   };
 
-let AppLoaded = {};
+const initPromise = createDeferredPromise();
+const promiseOCR = createDeferredPromise();
+
+// Use 'init' requirement for loading html or scripts if you want to load it without requirements
+let AppLoaded = {
+    'init':initPromise,
+    'doneOCR':promiseOCR
+};
 let AppHTMLRequests = [];
 let AppScriptRequests = [];
 
@@ -89,6 +97,17 @@ socket.on('load_html', async function(data) {
     });
 });
 
+socket.on('check_result', function(data) {
+    AppData.customNames = true;
+    const names =  data['names'];
+    const totalAmount = data['total_sum'];
+    AppData.totalAmount = totalAmount;
+    
+    setTimeout(() => {
+        AppLoaded['doneOCR']['res']();
+    });
+});
+
 function createDeferredPromise() {
     let res;
     
@@ -100,15 +119,12 @@ function createDeferredPromise() {
 }
 
 function requestHTML(page,requirement,position){
-    const newPendingPromise = createDeferredPromise();
-    let requirementStr = page + '.html'
-    if (requirement === 'init'){
-        const newInitPromise = createDeferredPromise();
-        AppLoaded['init'] = newInitPromise;
-        setTimeout(() => {
-            newInitPromise['res']();
-        }, 0);
+    const requirementStr = page + '.html'
+    if (Object.keys(AppLoaded).includes(requirementStr)){
+        console.log(`${page} is already requested!`);
+        return 0;
     }
+    const newPendingPromise = createDeferredPromise();
 
     AppLoaded[requirementStr] = newPendingPromise;
     AppHTMLRequests.push({
@@ -119,16 +135,13 @@ function requestHTML(page,requirement,position){
 }
 
 function requestScript(script,requirement){
-    const newPendingPromise = createDeferredPromise();
-    let requirementStr = script + '.js';
-    if (requirement === 'init'){
-        const newInitPromise = createDeferredPromise();
-        AppLoaded['init'] = newInitPromise;
-        setTimeout(() => {
-            newInitPromise['res']();
-        }, 0);
-    }
+    const requirementStr = script + '.js';
 
+    if (Object.keys(AppLoaded).includes(requirementStr)){
+        console.log(`${script} is already requested!`);
+        return 0;
+    }
+    const newPendingPromise = createDeferredPromise();
     AppLoaded[requirementStr] = newPendingPromise;
     AppScriptRequests.push({
         'script':`${script}`,
@@ -152,13 +165,16 @@ function sendScriptRequests(){
 
 function loadApp(){
     app.innerHTML = '';
-    requestHTML('scanner','init','beforeend');
+
+    requestHTML('header','init','beforebegin');
+    requestHTML('scanner','header.html','beforeend');
     requestHTML('info','scanner.html','beforeend');
     requestHTML('developers','info.html','beforeend');
 
     requestScript('theme','developers.html');
     requestScript('username','theme.js');
     requestScript('scanner','username.js');
+
     sendHTMLRequests();
     sendScriptRequests();
 }
@@ -166,22 +182,28 @@ function loadApp(){
 function loadAppWithJoin(session_key){
     app.innerHTML = '';
 
-    requestScript('theme','init');
+    requestHTML('header','init','beforebegin');
+    requestScript('theme','header.html');
     requestScript('username','theme.js');
 
     sendHTMLRequests();
     sendScriptRequests();
 
-    socket.emit('login', {"name":''});
+    socket.emit('login', {"name":UserSettings.username});
     socket.emit('join_session', {"session_key": session_key});
 }
 
 function loadDebug(){
     app.innerHTML = '';
-    requestHTML('DEBUG','init','beforeend');
+    requestHTML('header','init','beforebegin');
+    requestHTML('DEBUG','header.html','beforeend');
 
     requestScript('theme','DEBUG.html');
     requestScript('socket_handler','theme.js');
     sendHTMLRequests();
     sendScriptRequests();
 }
+
+setTimeout(() => {
+    initPromise['res']();
+}, 0);
