@@ -27,7 +27,25 @@
         }
     }
 
-
+    
+    /*
+     * Extracts the document from the image, given as a file input element.
+     * 
+     * The document is extracted by applying the following steps:
+     * 1. Morphological closing to remove noise.
+     * 2. GrabCut to separate the document from the background.
+     * 3. Masking to isolate the document.
+     * 4. Grayscaling and blurring to reduce noise.
+     * 5. Contour detection to find the document outline.
+     * 6. Approximation of the contour to a quadrilateral.
+     * 7. Perspective transformation to deskew the document.
+     * 8. Drawing the original and the extracted document for visualization.
+     * 9. Returning the extracted document.
+     * 10. Cleaning up the used OpenCV Mats.
+     * 
+     * @param {HTMLInputElement} img - The input element containing the image file.
+     * @returns {cv.Mat} - The extracted document image.
+     */
     function extractImage(img) {
 	    delPrevCanvases();
         
@@ -48,7 +66,7 @@
         let fgdModel = new cv.Mat();
         let rect = new cv.Rect(50, 50, src.cols - 70, src.rows - 70);
 
-        cv.grabCut(src, mask, rect, bgdModel, fgdModel, 1, cv.GC_INIT_WITH_RECT);
+        cv.grabCut(src, mask, rect, bgdModel, fgdModel, 5, cv.GC_INIT_WITH_RECT);
 
         // Create mask
         for (let i = 0; i < mask.rows; i++) {
@@ -125,7 +143,26 @@
         srcTri.delete(); dstTri.delete(); M.delete();
     }
 
-    // Image align
+
+    /*
+     * Aligns the image by detecting and correcting skew based on near-horizontal lines.
+     * 
+     * This function processes the input image to detect edges and lines, computes the
+     * average angle of near-horizontal lines, and then remaps the image to correct for
+     * skew. The aligned image is returned.
+     * 
+     * Steps:
+     * 1. Converts the input image to grayscale.
+     * 2. Applies Gaussian blur to reduce noise.
+     * 3. Detects edges using the Canny edge detector.
+     * 4. Finds lines using the probabilistic Hough transform.
+     * 5. Calculates angles of near-horizontal lines and averages them across the image.
+     * 6. Remaps the image based on the computed angles to correct skew.
+     * 7. Draws the detected lines for visualization.
+     * 
+     * @param {cv.Mat} img - The input image to be aligned.
+     * @returns {cv.Mat} - The aligned image after correcting skew.
+     */
     function aligner(img) {
         delPrevCanvases();
 
@@ -255,7 +292,7 @@
 
         document.getElementById('upload').addEventListener('change', (event) => {
                 let imgElement = new Image();
-                imgElement.onload = () => aligner(extractImage(imgElement)); // extractImage(imgElement)
+                imgElement.onload = () => extractImage(imgElement);
                 imgElement.src = URL.createObjectURL(event.target.files[0]);
             }
         );
