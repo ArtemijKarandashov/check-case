@@ -146,7 +146,7 @@ function removeParticipant(id) {
   initManualDistribution();
 }
 
-function addCustomParticipant(name,id) {
+function addCustomParticipant(id, name) {
   
   if (!name) {
     showErrorNotification('Введите имя участника');
@@ -166,8 +166,8 @@ function addCustomParticipant(name,id) {
   }
   
   // Проверяем дубликаты
-  if (AppData.participants.some(p => p.name === name)) {
-    showErrorNotification('Это имя уже добавлено');
+  if (AppData.participants.some(p => p.id === id)) {
+    //showErrorNotification('Этот пользователь уже добавлен');
     return;
   }
   
@@ -476,8 +476,12 @@ function loadDataOCR(){
 }
 
 function setDistributionData(){
-  addCustomParticipant(names[1],1);
-  updateReceiptData(AppData.totalAmount);
+  const names = AppData.names;
+  const totalAmount = AppData.totalAmount;
+  for (let id in names){
+    console.log(names[id]);
+    addCustomParticipant(id, names[id]);
+  }
+  updateReceiptData(totalAmount);
 }
-
 setDistributionData();

@@ -12,18 +12,15 @@ const UserSettings = {
 const AppData = {
     receipt: {
       totalAmount: 5730,
-      participants: ["Кот", "Собака", "Сова", "Пингвин"],
+      participants: [],
+      names: {},
       items: [
-        { name: "Стейк Рибай", price: 1500 },
-        { name: "Салат Цезарь", price: 450 },
-        { name: "Вино красное", price: 1200 },
-        { name: "Пиво крафтовое", price: 380 },
-        { name: "Десерт", price: 350 },
-        { name: "Чаевые", price: 700 },
-        { name: "Доставка", price: 750 }
-      ]
+        { name:'pos1', price: 1000 },
+        { name:'pos2', price: 1000 },
+        { name:'pos3', price: 1000 }
+      ] // Contains dicts with keys {name: str, price: int}
     },
-    customNames: false, // Флаг ручного ввода имён
+    customNames: true, // Флаг ручного ввода имён
     base64Image: String,
     sessionKey: 'None'
   };
@@ -33,12 +30,19 @@ const promiseOCR = createDeferredPromise();
 const userLogined = createDeferredPromise();
 const userInSession = createDeferredPromise();
 
-// Use 'init' requirement for loading html or scripts if you want to load it without requirements
+// AppLoaded contains an dict of pending promises with their resolve functions. That allows to create "chains" of actions 
+// from promises, so all requests to servers stay in correct order.
+// To get promise you need to call AppLoaded['key']['prom'];
+// To get resolve function you need to call AppLoaded['key']['res'];
+// Use 'init' requirement for loading html or scripts if you want to load it without requirements.
+// Use 'userLogined' requirement for anything that requires user to be logined into system.
+// Use 'inSession' requirement for anything that requires user to be in session. 
+// Use 'doneOCR' requirement if you need to use OCR data to continue.
 let AppLoaded = {
     'init':initPromise,
-    'doneOCR':promiseOCR,
     'userLogined':userLogined,
-    'inSession':userInSession
+    'inSession':userInSession,
+    'doneOCR':promiseOCR
 };
 let AppHTMLRequests = [];
 let AppScriptRequests = [];
@@ -55,24 +59,7 @@ socket.on('warning', (data) => {
 
 socket.on('send_session_key', (data) => {
     AppData.sessionKey = data.session_key;
-    const userInSessionPromise = AppLoaded['inSession'];
-    setTimeout(()=>{
-        userInSessionPromise['res']();
-    },0);
 });
-
-function loadHTML(pageData) {
-    const pageContent = pageData.page;
-    app.insertAdjacentHTML(pageData.position,pageContent);
-}
-
-function loadScript(scriptData) {
-    const scriptPath = scriptData.script
-    const script = document.createElement('script');
-    script.src = scriptPath;
-
-    document.body.appendChild(script);
-}
 
 socket.on('load_script', async function(data) {
     let requirement = data.requirement;
@@ -106,14 +93,15 @@ socket.on('load_html', async function(data) {
 });
 
 socket.on('check_result', function(data) {
-    AppData.customNames = true;
     const names =  data['names'];
-    const totalAmount = data['total_sum'];
+    const totalAmount = parseInt(data['total_sum']);
+    AppData.names = names;
     AppData.totalAmount = totalAmount;
     
     setTimeout(() => {
         AppLoaded['doneOCR']['res']();
     },0);
+    
 });
 
 socket.on('login_success', (data) => {
@@ -122,6 +110,39 @@ socket.on('login_success', (data) => {
         userLoginedPromise['res']();
     },0);
 });
+
+// This promise should be resolved when HOST connects to new session. Fix this when you have time for it.
+socket.on('send_session_key', (data) => {
+    const userInSessionPromise = AppLoaded['inSession'];
+    setTimeout(()=>{
+        userInSessionPromise['res']();
+    },0);
+});
+
+socket.on('current_user_list', (data) =>{
+    AppData.names = data['names'];
+    console.log(AppData.names);
+    AppLoaded['doneOCR']['prom'].then(()=>{
+        setDistributionData();
+    });
+});
+
+socket.on('user_connected', (data) => {
+    socket.emit('update_users_list', {'session_key': AppData.sessionKey});
+});
+
+function loadHTML(pageData) {
+    const pageContent = pageData.page;
+    app.insertAdjacentHTML(pageData.position,pageContent);
+}
+
+function loadScript(scriptData) {
+    const scriptPath = scriptData.script
+    const script = document.createElement('script');
+    script.src = scriptPath;
+
+    document.body.appendChild(script);
+}
 
 function createDeferredPromise() {
     let res;
@@ -205,7 +226,10 @@ function loadAppWithJoin(session_key){
     sendScriptRequests();
 
     socket.emit('login', {"name":UserSettings.username});
-    socket.emit('join_session', {"session_key": session_key});
+    
+    AppLoaded['userLogined']['prom'].then(()=> {
+        socket.emit('join_session', {"session_key": session_key});
+    });
 }
 
 function loadDebug(){

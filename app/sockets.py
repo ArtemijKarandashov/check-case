@@ -64,7 +64,7 @@ def handle_create_session(data):
 
     _con_manager.update_user_type(user_id,'HOST')
     new_session = _con_manager.create_session(stype=session_type)
-    conect_user(new_session.key, user_id)
+    connect_user(new_session.key, user_id)
 
     if new_session.type == 'SINGULAR':
         ph_users = int(data['ph_users'])
@@ -93,7 +93,7 @@ def handle_join_session(data):
         emit('error', {'message': 'You are not logged in!'}, room=session['sid'])
         return None
     
-    conect_user(session_key, user_id)
+    connect_user(session_key, user_id)
 
 
 @socketio.on('process_check')
@@ -141,6 +141,7 @@ def handle_process_check(data):
 
     _con_manager.update_session_status(session_key,2)
 
+    print(names)
     emit('check_result', {
         'message': 'Check processed!',
         "total_sum":total_sum,
@@ -179,7 +180,7 @@ def handle_distribution_results():
     return results
 
 
-def conect_user(session_key: str, user_id: int):
+def connect_user(session_key: str, user_id: int):
     new_connection = _con_manager.create_connection(session_key, user_id)
 
     if not new_connection:
@@ -243,11 +244,10 @@ def logout_user():
 
 def create_phantom_user(session_key: str):
     ph_user = _con_manager.create_user(type = "PHANTOM")
-    conect_user(session_key, ph_user.id)
+    connect_user(session_key, ph_user.id)
 
 @socketio.on('request_html')
 def handle_message(data):
-    print(data)
     page = data['page'].replace('.','')
     emit('load_html',{
         'page':render_template(f'{page}.html'),
@@ -264,3 +264,23 @@ def handle_request_script(data):
         'title':f"{data['script']}.js",
         'requirement':data['requirement']
         }, room=session['sid'])
+
+@socketio.on('update_users_list')
+def handle_update_users_list(data):
+    user_id = _con_manager.get_user_id_by_sid(session['sid'])
+    user_data = _con_manager.get_user_data(user_id)
+
+    if user_data == ():
+        return None
+
+    if user_data[2] != 'HOST':
+        return None
+
+    session_key = data['session_key']
+    users = _con_manager.get_users_in_session(session_key)
+    
+    names = {}
+    for user in users:
+        names[user] = _con_manager.get_user_data(user)[1]
+    
+    emit('current_user_list',{'names':names}, room=session['sid'])

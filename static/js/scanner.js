@@ -45,7 +45,10 @@ function createInviteLink() {
   sendScriptRequests();
   
   const requiredPromise = AppLoaded['inSession'];
-  requiredPromise['prom'].then (() => {socket.emit('process_check',{'image':AppData.base64Image}) });
+  requiredPromise['prom'].then (
+    () => {
+        socket.emit('process_check',{'image':AppData.base64Image}) 
+    });
 }
 
 socket.on('send_session_key', (data) => {
