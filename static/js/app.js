@@ -30,11 +30,15 @@ const AppData = {
 
 const initPromise = createDeferredPromise();
 const promiseOCR = createDeferredPromise();
+const userLogined = createDeferredPromise();
+const userInSession = createDeferredPromise();
 
 // Use 'init' requirement for loading html or scripts if you want to load it without requirements
 let AppLoaded = {
     'init':initPromise,
-    'doneOCR':promiseOCR
+    'doneOCR':promiseOCR,
+    'userLogined':userLogined,
+    'inSession':userInSession
 };
 let AppHTMLRequests = [];
 let AppScriptRequests = [];
@@ -51,6 +55,10 @@ socket.on('warning', (data) => {
 
 socket.on('send_session_key', (data) => {
     AppData.sessionKey = data.session_key;
+    const userInSessionPromise = AppLoaded['inSession'];
+    setTimeout(()=>{
+        userInSessionPromise['res']();
+    },0);
 });
 
 function loadHTML(pageData) {
@@ -105,7 +113,14 @@ socket.on('check_result', function(data) {
     
     setTimeout(() => {
         AppLoaded['doneOCR']['res']();
-    });
+    },0);
+});
+
+socket.on('login_success', (data) => {
+    const userLoginedPromise = AppLoaded['userLogined'];
+    setTimeout(() => {
+        userLoginedPromise['res']();
+    },0);
 });
 
 function createDeferredPromise() {

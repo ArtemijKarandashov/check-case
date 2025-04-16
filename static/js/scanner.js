@@ -23,25 +23,29 @@ function handleReceiptUpload(e) {
     createNewSession();
 }
 
-async function createNewSession(){
+function createNewSession(){
   socket.emit('login',{
     "name":UserSettings.username
   });
 
-  socket.emit('create_session', {
-    "type":'DEFAULT',
-    "ph_users":0
+  const requiredPromise = AppLoaded['userLogined'];
+  requiredPromise['prom'].then( () => {
+    socket.emit('create_session', {
+      "type":'DEFAULT',
+      "ph_users":0
+    });
   });
 }
 
-async function createInviteLink() {
+function createInviteLink() {
   requestHTML('link','init','afterbegin');
   requestScript('link','link.html');
 
   sendHTMLRequests();
   sendScriptRequests();
-
-  socket.emit('process_check',{'image':AppData.base64Image})
+  
+  const requiredPromise = AppLoaded['inSession'];
+  requiredPromise['prom'].then (() => {socket.emit('process_check',{'image':AppData.base64Image}) });
 }
 
 socket.on('send_session_key', (data) => {

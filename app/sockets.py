@@ -247,6 +247,7 @@ def create_phantom_user(session_key: str):
 
 @socketio.on('request_html')
 def handle_message(data):
+    print(data)
     page = data['page'].replace('.','')
     emit('load_html',{
         'page':render_template(f'{page}.html'),
