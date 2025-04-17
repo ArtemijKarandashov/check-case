@@ -1,20 +1,23 @@
 const saveUsernameButton = document.getElementById('saveUsernameBtn');
+const usernameInput =  document.getElementById('usernameInput');
 
+usernameInput.focus();
 initUserName();
 
 function initUserName() {
-    usernameEntry.value = UserSettings.username;
+    usernameInput.value = UserSettings.username;
 }
 
 saveUsernameButton.addEventListener('click', function() {
-    const username = document.getElementById('usernameInput').value.trim();
+    saveUsernameButton.disabled = true;
+    const username = usernameInput.value.trim();
     if (username) {
         UserSettings.username = username;
         localStorage.setItem('username', username);
     } else {
         alert('Пожалуйста, введите ваше имя');
     }
+    socket.emit('login', {
+        "name":UserSettings.username
+    });
 });
-
-
-saveUsernameButton.focus();

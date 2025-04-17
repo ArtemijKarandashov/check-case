@@ -4,7 +4,7 @@ const socket = io();
 
 // Пользовательские настройки приложения
 const UserSettings = {
-    username: localStorage.getItem('username') || 'Jhon-Doe',
+    username: localStorage.getItem('username') || '',
     theme: localStorage.getItem('theme') || 'light',
 }
 
@@ -57,10 +57,6 @@ socket.on('warning', (data) => {
     requestHTML('error','header.html','afterbegin');
 });
 
-socket.on('send_session_key', (data) => {
-    AppData.sessionKey = data.session_key;
-});
-
 socket.on('load_script', async function(data) {
     let requirement = data.requirement;
     const requiredPromise = AppLoaded[requirement];
@@ -68,8 +64,6 @@ socket.on('load_script', async function(data) {
         loadScript(data);
         const pendingPromise = AppLoaded[data.title];
         const resolveFunc = pendingPromise['res'];
-        console.log(AppLoaded);
-        console.log(pendingPromise);
         
         setTimeout(() => {
             resolveFunc();
@@ -84,25 +78,13 @@ socket.on('load_html', async function(data) {
         loadHTML(data);
         const pendingPromise = AppLoaded[data.title];
         const resolveFunc = pendingPromise['res'];
-        console.log(AppLoaded);
-        console.log(pendingPromise);
         setTimeout(() => {
             resolveFunc();
+            window.scrollTo(0, 0);
         }, 0);
     });
 });
 
-socket.on('check_result', function(data) {
-    const names =  data['names'];
-    const totalAmount = parseFloat(data['total_sum']);
-    AppData.names = names;
-    AppData.receipt.totalAmount = totalAmount;
-    
-    setTimeout(() => {
-        AppLoaded['doneOCR']['res']();
-    },0);
-    
-});
 
 socket.on('login_success', (data) => {
     const userLoginedPromise = AppLoaded['userLogined'];
@@ -111,21 +93,6 @@ socket.on('login_success', (data) => {
     },0);
 });
 
-// This promise should be resolved when HOST connects to new session. Temporary
-socket.on('send_session_key', (data) => {
-    const userInSessionPromise = AppLoaded['inSession'];
-    setTimeout(()=>{
-        userInSessionPromise['res']();
-    },0);
-});
-
-socket.on('current_user_list', (data) =>{
-    AppData.names = data['names'];
-    console.log(AppData.names);
-    AppLoaded['doneOCR']['prom'].then(()=>{
-        setDistributionData();
-    });
-});
 
 function loadHTML(pageData) {
     const pageContent = pageData.page;
@@ -199,13 +166,13 @@ function loadApp(){
     app.innerHTML = '';
 
     requestHTML('header','init','beforebegin');
-    requestHTML('scanner','header.html','beforeend');
-    requestHTML('infoHost','scanner.html','beforeend');
+    requestHTML('username','header.html','beforeend');
+    requestHTML('infoHost','username.html','beforeend');
     requestHTML('developers','infoHost.html','beforeend');
 
-    requestScript('theme','developers.html');
-    requestScript('username','theme.js');
-    requestScript('scanner','username.js');
+    requestScript('theme','header.html');
+    requestScript('username','username.html');
+    requestScript('host','username.js');
 
     sendHTMLRequests();
     sendScriptRequests();
@@ -225,12 +192,6 @@ function loadAppWithJoin(session_key){
     sendHTMLRequests();
     sendScriptRequests();
 
-    AppLoaded['username.js']['prom'].then(()=>{
-        socket.emit('login', {
-            "name":UserSettings.username
-        });
-    });
-    
     AppLoaded['userLogined']['prom'].then(()=> {
         socket.emit('join_session', {"session_key": session_key});
     });

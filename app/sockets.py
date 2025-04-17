@@ -28,7 +28,7 @@ def handle_login(data):
     if data['name'] == '':
         name = None
     new_user =_con_manager.create_user(name = name, type = "CLIENT", sid = session['sid'])
-    print(f'Client {session['sid']} logined as {new_user.name}')
+    logger.info(f'Client {session['sid']} logined as {new_user.name}')
     emit('login_success', {'message': 'You are connected!', 'name': new_user.name, 'type': new_user.type}, room=session['sid'])
 
 
@@ -142,7 +142,6 @@ def handle_process_check(data):
 
     _con_manager.update_session_status(session_key,2)
 
-    print(names)
     emit('check_result', {
         'message': 'Check processed!',
         "total_sum":total_sum,
@@ -170,7 +169,7 @@ def connect_user(session_key: str, user_id: int):
 
 def logout_user():
     if not _con_manager.sid_exists(session['sid']):
-        print(f'Cannot logout user. User with given sid {session['sid']} does not exist in db. Already logged out?')
+        logger.info(f'Cannot logout user. User with given sid {session['sid']} does not exist in db. Already logged out?')
         return None
 
     user_id = _con_manager.get_user_id_by_sid(session['sid'])
