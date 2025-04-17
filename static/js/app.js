@@ -94,9 +94,9 @@ socket.on('load_html', async function(data) {
 
 socket.on('check_result', function(data) {
     const names =  data['names'];
-    const totalAmount = parseInt(data['total_sum']);
+    const totalAmount = parseFloat(data['total_sum']);
     AppData.names = names;
-    AppData.totalAmount = totalAmount;
+    AppData.receipt.totalAmount = totalAmount;
     
     setTimeout(() => {
         AppLoaded['doneOCR']['res']();
@@ -125,10 +125,6 @@ socket.on('current_user_list', (data) =>{
     AppLoaded['doneOCR']['prom'].then(()=>{
         setDistributionData();
     });
-});
-
-socket.on('user_connected', (data) => {
-    socket.emit('update_users_list', {'session_key': AppData.sessionKey});
 });
 
 function loadHTML(pageData) {

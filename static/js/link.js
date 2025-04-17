@@ -32,3 +32,12 @@ if (hostname === 'localhost'){
 }else{
     generate_qr(hostname + "/?key=" + AppData.sessionKey);
 }
+
+//This events must be handled here and not in app.js, otherwise CLIENT useres will too send this request 
+socket.on('user_connected', (data) => {
+    socket.emit('update_users_list', {'session_key': AppData.sessionKey});
+  });
+  
+socket.on('user_left_session', (data) => {
+    socket.emit('update_users_list', {'session_key': AppData.sessionKey});
+});

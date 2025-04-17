@@ -135,12 +135,10 @@ function renderParticipants() {
 }
 
 function removeParticipant(id) {
-  AppData.participants = AppData.participants.filter(p => p.id !== id);
-  if (AppData.participants.length === 0) {
-    AppData.customNames = false;
-    AppData.receipt.participants = ["Кот", "Собака", "Сова", "Пингвин"];
-    initParticipants();
+  if (AppData.participants.length === 1) {
+    showNotification('Невозможно удалить участника!')
   }
+  AppData.participants = AppData.participants.filter(p => p.id !== id);
   renderParticipants();
   updateTotals();
   initManualDistribution();
@@ -333,9 +331,9 @@ function updateResultsUI(results, total) {
   `;
 }
 
-function updateReceiptData(totalSum) {
+function updateReceiptData() {
   AppData.receipt = {
-    totalAmount: totalSum,
+    totalAmount: AppData.receipt.totalAmount,
     participants: [...AppData.receipt.participants],
     items: [
       ...AppData.receipt.items,
@@ -477,11 +475,17 @@ function loadDataOCR(){
 
 function setDistributionData(){
   const names = AppData.names;
-  const totalAmount = AppData.totalAmount;
-  for (let id in names){
-    console.log(names[id]);
-    addCustomParticipant(id, names[id]);
+  console.log(AppData.participants);
+  for (const participant of AppData.participants){
+    console.log('____________');
+    console.log(participant);
+    if ((Object.keys(AppData.names).includes(participant.id) == false)){
+      removeParticipant(participant.id);
+    }
   }
-  updateReceiptData(totalAmount);
+  for (let id in names){
+      addCustomParticipant(id, names[id]);
+  }
+  updateReceiptData();
 }
 setDistributionData();

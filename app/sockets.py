@@ -215,6 +215,11 @@ def logout_user():
         emit('logout_success', {'message': 'You are disconnected!'}, room=session['sid'])
         return None
 
+    # Emit a signal to all members in client's session to update user list
+    users = _con_manager.get_users_in_session(session_key)
+    for user in users:
+        emit('user_left_session',{'message':'user left'},room=_con_manager.get_user_data(user)[3])
+
     # Delete session if host disconnected
     if user_data[2] == 'HOST':
         _con_manager.delete_session(session_key)
@@ -272,9 +277,11 @@ def handle_update_users_list(data):
     user_data = _con_manager.get_user_data(user_id)
 
     if user_data == ():
+        logger.warning(f'No user data for user {user_id}.')
         return None
 
     if user_data[2] != 'HOST':
+        logger.warning(f'User {user_id} is not a HOST of this session! Update user list request denied.')
         return None
 
     session_key = data['session_key']
