@@ -471,10 +471,7 @@ function setupNotificationClose(notification) {
 
 function setDistributionData(){
   const names = AppData.names;
-  console.log(AppData.participants);
   for (const participant of AppData.participants){
-    console.log('____________');
-    console.log(participant);
     if ((Object.keys(AppData.names).includes(participant.id) == false)){
       removeParticipant(participant.id);
     }

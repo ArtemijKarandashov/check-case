@@ -262,3 +262,8 @@ def handle_update_users_list(data):
         names[user] = _con_manager.get_user_data(user)[1]
     
     emit('current_user_list',{'names':names}, room=session['sid'])
+
+
+@socketio.on('distribution_results')
+def handle_distribution_results(data):
+    pass
