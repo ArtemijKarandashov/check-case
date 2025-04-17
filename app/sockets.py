@@ -18,13 +18,14 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     logout_user()
+    # TODO: Send update to HOST if in session
     logger.info(f'Client disconected: {session['sid']}')
 
 
 @socketio.on('login')
 def handle_login(data):
     name = data['name']
-    if not data['name'] == '':
+    if data['name'] == '':
         name = None
     new_user =_con_manager.create_user(name = name, type = "CLIENT", sid = session['sid'])
     print(f'Client {session['sid']} logined as {new_user.name}')

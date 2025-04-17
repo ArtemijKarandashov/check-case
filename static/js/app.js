@@ -225,7 +225,11 @@ function loadAppWithJoin(session_key){
     sendHTMLRequests();
     sendScriptRequests();
 
-    socket.emit('login', {"name":UserSettings.username});
+    AppLoaded['username.js']['prom'].then(()=>{
+        socket.emit('login', {
+            "name":UserSettings.username
+        });
+    });
     
     AppLoaded['userLogined']['prom'].then(()=> {
         socket.emit('join_session', {"session_key": session_key});
