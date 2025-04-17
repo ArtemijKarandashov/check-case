@@ -704,3 +704,118 @@
       scroll-behavior: auto !important;
     }
   }
+
+  .username-page {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--username-bg-body);
+    color: var(--username-text-primary);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .username-main-container {
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+  }
+  
+  .username-card-block {
+    background-color: var(--username-bg-card);
+    border-radius: var(--username-border-radius);
+    padding: 32px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s;
+  }
+  
+  .username-card-block:hover {
+    transform: translateY(-5px);
+  }
+  
+  .username-card-header {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .username-card-header i {
+    color: var(--username-primary);
+    font-size: 28px;
+  }
+  
+  .username-form-container {
+    padding: 16px 0;
+  }
+  
+  .username-input-group {
+    margin-bottom: 24px;
+  }
+  
+  .username-input-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  
+  .username-input-field {
+    width: calc(100% - 32px);
+    max-width: 100%; 
+    padding: 12px 16px;
+    border-radius: var(--username-border-radius);
+    border: 1px solid var(--username-border);
+    background-color: var(--username-bg-card);
+    color: var(--username-text-primary);
+    font-size: 16px;
+    box-sizing: border-box; 
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .username-input-field:focus {
+    outline: none;
+    border-color: var(--username-primary);
+    box-shadow: 0 0 0 2px rgba(33, 160, 56, 0.2);
+  }
+  
+  .username-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px;
+    border-radius: var(--username-border-radius);
+    border: none;
+    background-color: var(--username-primary);
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+  
+  .username-submit-btn:hover {
+    background-color: var(--username-primary-dark);
+    transform: translateY(-2px);
+  }
+  
+  .username-submit-btn i {
+    margin-right: 8px;
+  }
+  
+  @media (max-width: 600px) {
+    .username-card-block {
+      padding: 24px;
+    }
+  
+    .username-input-field {
+      padding: 12px;
+    }
+  
+    .username-card-header {
+      font-size: 20px;
+    }
+  }

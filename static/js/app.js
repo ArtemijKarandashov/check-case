@@ -49,12 +49,12 @@ let AppScriptRequests = [];
 
 socket.on('error', (data) => {
     console.log(data)
-    socket.emit('request_html', {'page':'error'});
+    requestHTML('error','header.html','afterbegin');
 })
 
 socket.on('warning', (data) => {
     console.log(data)
-    socket.emit('request_html', {'page':'error'});
+    requestHTML('error','header.html','afterbegin');
 });
 
 socket.on('send_session_key', (data) => {
@@ -200,8 +200,8 @@ function loadApp(){
 
     requestHTML('header','init','beforebegin');
     requestHTML('scanner','header.html','beforeend');
-    requestHTML('info','scanner.html','beforeend');
-    requestHTML('developers','info.html','beforeend');
+    requestHTML('infoHost','scanner.html','beforeend');
+    requestHTML('developers','infoHost.html','beforeend');
 
     requestScript('theme','developers.html');
     requestScript('username','theme.js');
@@ -215,8 +215,12 @@ function loadAppWithJoin(session_key){
     app.innerHTML = '';
 
     requestHTML('header','init','beforebegin');
+    requestHTML('infoClient','header.html','beforeend');
+    requestHTML('developers','infoClient.html','beforeend');
+    requestHTML('username','developers.html','afterbegin');
+
     requestScript('theme','header.html');
-    requestScript('username','theme.js');
+    requestScript('username','username.html');
 
     sendHTMLRequests();
     sendScriptRequests();

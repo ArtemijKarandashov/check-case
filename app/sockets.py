@@ -222,6 +222,7 @@ def create_phantom_user(session_key: str):
     ph_user = _con_manager.create_user(type = "PHANTOM")
     connect_user(session_key, ph_user.id)
 
+
 @socketio.on('request_html')
 def handle_message(data):
     page = data['page'].replace('.','')
@@ -232,6 +233,7 @@ def handle_message(data):
         'position':data['position']
         }, room=session['sid'])
 
+
 @socketio.on('request_script')
 def handle_request_script(data):
     script_name = 'js/' + data['script'].replace('.','') + ".js"
@@ -240,6 +242,7 @@ def handle_request_script(data):
         'title':f"{data['script']}.js",
         'requirement':data['requirement']
         }, room=session['sid'])
+
 
 @socketio.on('update_users_list')
 def handle_update_users_list(data):
