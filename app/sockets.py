@@ -151,36 +151,6 @@ def handle_process_check(data):
         }, room=session['sid'])
 
 
-@socketio.on('all_users_joined')
-def handle_all_users_joined():
-    user_id = _con_manager.get_user_id_by_sid(session['sid'])
-    user_data = _con_manager.get_user_data(user_id)
-
-    if user_data[2] != 'HOST':
-        emit('error',{'message':'You are not a host of this session!'}, room=session['sid'])
-        return None
-
-    session_key = _con_manager.get_users_session(user_id)
-    session_data = _con_manager.get_session_data(session_key)
-
-    if session_data[2] != 3:
-        emit('error',{'message':'Set distribution type before continuing!'}, room=session['sid'])
-        return None
-
-    _con_manager.update_session_status(session_key,4)
-    # TODO: Redirect all users to distrebution results page
-
-
-@socketio.on('distribution_results')
-def handle_distribution_results():
-    results = {
-        'total_sum':0,
-        'personal_sum':0,
-        }
-    
-    return results
-
-
 def connect_user(session_key: str, user_id: int):
     new_connection = _con_manager.create_connection(session_key, user_id)
 

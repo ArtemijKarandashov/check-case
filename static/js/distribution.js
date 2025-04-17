@@ -469,10 +469,6 @@ function setupNotificationClose(notification) {
   });
 }
 
-function loadDataOCR(){
-  socket.emit('getDataOCR',{'session_key':AppData.sessionKey});
-}
-
 function setDistributionData(){
   const names = AppData.names;
   console.log(AppData.participants);
