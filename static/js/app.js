@@ -111,7 +111,7 @@ socket.on('login_success', (data) => {
     },0);
 });
 
-// This promise should be resolved when HOST connects to new session. Fix this when you have time for it.
+// This promise should be resolved when HOST connects to new session. Temporary
 socket.on('send_session_key', (data) => {
     const userInSessionPromise = AppLoaded['inSession'];
     setTimeout(()=>{

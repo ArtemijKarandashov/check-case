@@ -18,6 +18,8 @@ function generate_qr(url){
 }
 
 function loadDistr(){
+    toDistributionBtn.disabled = true;
+    toDistributionBtn.textContent = 'Пожалуйста, подождите';
     requestHTML('distribution','doneOCR','afterbegin');
     requestScript('distribution','distribution.html');
     
