@@ -158,7 +158,7 @@ function sendScriptRequests(){
     AppScriptRequests = [];
 }
 
-function loadApp(){
+function loadAppHost(){
     app.innerHTML = '';
 
     requestHTML('header','init','beforebegin');
@@ -174,7 +174,7 @@ function loadApp(){
     sendScriptRequests();
 }
 
-function loadAppWithJoin(session_key){
+function loadAppClient(session_key){
     app.innerHTML = '';
 
     requestHTML('header','init','beforebegin');
@@ -184,6 +184,7 @@ function loadAppWithJoin(session_key){
 
     requestScript('theme','header.html');
     requestScript('username','username.html');
+    requestScript('client','userLogined');
 
     sendHTMLRequests();
     sendScriptRequests();

@@ -269,8 +269,10 @@ def handle_update_users_list(data):
 @socketio.on('distribution_results')
 def handle_distribution_results(data):
     results = data['results']
+    print(results)
     session_key = data['session_key']
     users = _con_manager.get_users_in_session(session_key)
 
     for user in users:
-        emit('my_part',{})
+        user_data = _con_manager.get_user_data(user)
+        emit('my_part',{'sum':results[str(user)]},room=user_data[3])

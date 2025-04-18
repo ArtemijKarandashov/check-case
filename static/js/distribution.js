@@ -136,7 +136,7 @@ function renderParticipants() {
 
 function removeParticipant(id) {
   if (AppData.participants.length === 1) {
-    showNotification('Невозможно удалить участника!')
+    showErrorNotification('Невозможно удалить участника!')
   }
   AppData.participants = AppData.participants.filter(p => p.id !== id);
   renderParticipants();
@@ -278,7 +278,7 @@ function initManualDistribution() {
       <select id="owners-${index}" multiple>
         ${AppData.participants
           .filter(p => p.selected)
-          .map(p => `<option data-internalid="${p.id}" value="${p.name}" selected>${p.name}</option>`)
+          .map(p => `<option value="${p.id}" selected>${p.name}</option>`)
           .join('')}
       </select>
     </div>
@@ -292,7 +292,7 @@ function calculateManualShares() {
   
   AppData.receipt.items.forEach((item, index) => {
     const select = document.getElementById(`owners-${index}`);
-    const selectedPeople = Array.from(select.selectedOptions).map(o => o.data-internalid);
+    const selectedPeople = Array.from(select.selectedOptions).map(o => o.value);
     const price = parseFloat(item.price) || 0;
     
     if (selectedPeople.length > 0) {
@@ -307,8 +307,8 @@ function calculateManualShares() {
   });
   
   if (hasSelectedItems) {
-    const results = Object.entries(shares).map(([data, amount]) => ({
-      id: data,
+    const results = Object.entries(shares).map(([name, amount]) => ({
+      name: name,
       amount: amount.toFixed(2)
     }));
 
@@ -323,7 +323,7 @@ function updateResultsUI(results, total) {
   resultsContainer.innerHTML = `
     <h3>Итоговые суммы:</h3>
     <div class="results-list">
-      ${results.map(r => `<p><strong>${r.name}:</strong> ${r.amount} ₽</p>`).join('')}
+      ${results.map(r => `<p><strong>${AppData.names[r.name]}:</strong> ${r.amount} ₽</p>`).join('')}
     </div>
     <div class="total-summary">
       <strong>Общая сумма:</strong> ${total.toFixed(2)} ₽
@@ -376,7 +376,7 @@ function confirmPercentageDistribution() {
       percentage: p.percentage,
       amount: p.amount.toFixed(2)
     }));
-
+  
   showNotification(
     'Распределение подтверждено!',
     'fas fa-check-circle',
@@ -384,6 +384,11 @@ function confirmPercentageDistribution() {
     distribution,
     AppData.receipt.totalAmount
   );
+  let results = {};
+  for (const user of AppData.participants){
+    results[user.id] = user.percentage/100 * AppData.receipt.totalAmount;
+  }
+  sendResultsToOtherUsers(results);
 }
 
 function showManualDistributionNotification(results, total) {
@@ -396,7 +401,7 @@ function showManualDistributionNotification(results, total) {
       <div class="distribution-details">
         ${results.map(r => `
           <div class="distribution-item">
-            <span>${r.name}</span>
+            <span>${AppData.names[r.name]}</span>
             <span>${r.amount} ₽</span>
           </div>
         `).join('')}
@@ -410,6 +415,12 @@ function showManualDistributionNotification(results, total) {
   
   document.body.appendChild(notification);
   setupNotificationClose(notification);
+  
+  let resultsToSend = {}
+  for (const user of AppData.participants){
+    resultsToSend[user.id] = user.amount;
+  }
+  sendResultsToOtherUsers(resultsToSend);
 }
 
 function showNotification(title, icon, iconColor, items, totalAmount) {
@@ -486,4 +497,9 @@ function setDistributionData(){
   }
   AppData.servings = [];
 }
+
+function sendResultsToOtherUsers(results){
+  socket.emit('distribution_results',{'session_key':AppData.sessionKey,'results':results});
+}
+
 setDistributionData();
