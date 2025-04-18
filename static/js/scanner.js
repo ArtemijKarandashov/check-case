@@ -36,32 +36,6 @@ function createNewSession(){
   });
 }
 
-function drawImages(img_array) {
-  scale = 0.7;
-  img_array.forEach((img, i) => {
-          const imgCanvas = document.createElement('canvas');
-          
-          const verticalPadding = 10;
-          imgCanvas.style.paddingTop = `${verticalPadding}px`;
-          imgCanvas.style.paddingBottom = `${verticalPadding}px`;
-
-          width = Math.floor(img.cols * scale);
-          height = Math.floor(img.rows * scale);
-          imgCanvas.style.width = width;
-          imgCanvas.style.height = height;
-
-          cv.imshow(imgCanvas, img);
-          document.body.appendChild(imgCanvas);
-      });
-}
-
-function delPrevCanvases() {
-  let canvases = document.querySelectorAll('canvas');
-  for (let i = 0; i < canvases.length; i++) {
-      document.body.removeChild(canvases[i]);
-  }
-}
-
 
 /**
   * Extracts the document from the image, given as a file input element.
@@ -82,7 +56,6 @@ function delPrevCanvases() {
   * @returns {cv.Mat} - The extracted document image.
   */
 function extractImage(img) {
-  delPrevCanvases();
   
   let src = cv.imread(img);
   let original = new cv.Mat();
@@ -169,7 +142,6 @@ function extractImage(img) {
 
 
   ///////////////////////////////// here
-  drawImages([original, dst]);
   return dst;
 
   // Clean up
@@ -199,7 +171,6 @@ function extractImage(img) {
   * @returns {cv.Mat} - The aligned image after correcting skew.
   */
 function aligner(img) {
-  delPrevCanvases();
 
   // let src = cv.imread(img);
   let src = new cv.Mat();
@@ -283,7 +254,6 @@ function aligner(img) {
 
 
   ///////////////////////////////////////////// here
-  drawImages([aligned, lineImg, src, edges]);
   return aligned;
 
   // Cleanup
@@ -343,11 +313,16 @@ function setupExtractor() {
   setupOpenCv()
 
   receiptUpload.addEventListener('change', (event) => {
+          const imagePromise = new Promise((resolve)=>{
           let imgElement = new Image();
-          imgElement.onload = () => extractImage(imgElement);
+          imgElement.onload = () => AppData.base64Image = convertMat2Base64(extractImage(imgElement));
           imgElement.src = URL.createObjectURL(event.target.files[0]);
-          AppData.base64Image = imgElement;
+          scannerPreview.src = imgElement.src;
+          scannerPreview.style.display = 'block';
+          scannerPlaceholder.style.display = 'none';
           createNewSession();
+          resolve();
+        });
       }
   );
 }

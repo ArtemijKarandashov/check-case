@@ -3,7 +3,6 @@ from .. import data_dir
 
 import datetime as dt
 import os
-import sys
 import logging
 
 class Logger(metaclass=Singleton):
