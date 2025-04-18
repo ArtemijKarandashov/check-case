@@ -1,0 +1,1 @@
+from app.ocr.ocr_thread import ThreadOCR

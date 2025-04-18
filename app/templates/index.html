@@ -1,24 +1,50 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Connection test</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
-    </head>
-    <body>
-        <button onclick="login()">Login</button><button onclick="logout()">Logout</button>
-        <h1 id = "user_name">Logined us: My name</h1>
-        <input id="session_key" type="text" placeholder="session key" />
-
-        <button onclick="joinSession()">Join session</button>
-        <button onclick="createSession()">Create session</button>
-        <button onclick="processCheck()">Process check</button>
-
-        <br>
-        <h2 id = "session_data">Server response</h2>
-        <div id = "messages"></div>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЧекСканер | Умное разделение чеков</title>
     
-        <script src="{{ url_for('static', filename='js/socket_handler.js') }}"></script>
-    </body>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/multiple-select/1.5.2/multiple-select.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/multiple-select/1.5.2/multiple-select.min.css">
+
+    <script src="{{ url_for('static', filename='js/opencv.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/qrcode.js') }}"></script>
+</head>
+<body>
+    <div class="main-container" id="app">
+        <h1>Please wait! App is loading...</h1>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        const currentURL = window.location.href;
+        const currentUrlObj = new URL(currentURL);
+        const currentParams = new URLSearchParams(currentUrlObj.search);
+
+        const key = currentParams.get('key');
+        const debug = currentParams.get('debug');
+        console.log(`Current key: ${key}`);
+
+        function handle_load(){
+            if (debug === '1'){
+                loadDebug()
+                return 0;
+            }
+            
+            if (currentUrlObj.searchParams.has('key')) {
+                loadAppClient(key)
+            }else{
+                loadAppHost()
+            }
+        }
+
+        handle_load();
+    </script>
+</body>
 </html>

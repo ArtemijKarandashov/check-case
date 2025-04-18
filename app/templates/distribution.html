@@ -1,0 +1,58 @@
+<!-- Блок распределения платежей -->
+<div class="card manual-distribution-block">
+    <h2 class="card-title"><i class="fas fa-percentage"></i> Распределение платежей</h2>
+
+    <div class="distribution-type-selector">
+        <button class="btn btn-outline active" id="percentageModeBtn">
+            <i class="fas fa-percent"></i> Процентный
+        </button>
+        <button class="btn btn-outline" id="manualModeBtn">
+            <i class="fas fa-edit"></i> По позициям
+        </button>
+    </div>
+
+    <!-- Процентное распределение -->
+    <div id="percentageDistribution" class="distribution-section">
+        <div class="participants-list" id="participantsList">
+            <!-- Участники будут добавляться через JS -->
+        </div>
+
+        <!-- Блок добавления новых участников -->
+        <!-- <div class="add-participant">
+            <input type="text" id="newParticipantInput" placeholder="Введите имя участника">
+            <button class="btn btn-outline" id="addParticipantBtn">
+                <i class="fas fa-plus"></i> Добавить
+            </button>
+        </div> -->
+
+        <div class="distribution-summary">
+            <div class="total-percentage">
+                Всего распределено: <span id="totalPercentage">0</span>%
+            </div>
+            <div class="total-amount">
+                Итого к оплате: <span id="totalAmount">0</span> ₽
+            </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="confirmDistributionBtn" disabled>
+            <i class="fas fa-check"></i> Подтвердить распределение
+        </button>
+    </div>
+
+    <!-- Ручное распределение по позициям -->
+    <div id="manualDistribution" class="distribution-section" style="display: none;">
+        <div class="participants-selection">
+            <h3>Выберите участников:</h3>
+            <div class="manual-participants-list" id="manualParticipantsList">
+                <!-- Участники для ручного режима -->
+            </div>
+        </div>
+
+        <div class="bill-items" id="bill-items">
+            <!-- Позиции чека будут добавляться через JS -->
+        </div>
+        <button class="btn btn-primary btn-block" id="calculate-button">
+            <i class="fas fa-check"></i> Подтвердить распределение
+        </button>
+        <div class="results" id="results"></div>
+    </div>
+</div>
