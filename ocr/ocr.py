@@ -23,7 +23,6 @@ def get_ocr_data(reader: easyocr.Reader(['ru']), img_path: str, **kwargs) -> lis
 
     return data
 
-
 def get_total_sum(data: list) -> dict[str: float]:
     """
     A function that takes the data from get_ocr_data and returns a dictionary with the total sum.
@@ -68,7 +67,6 @@ def get_total_sum(data: list) -> dict[str: float]:
             print(e)
             return None
 
-
 def get_servings(data: list) -> list:
     total_sum_keywords: set = {'итог', 'всего', 'к оплат', 'сумм'}
     servings_keywords: set = {'блюд', 'наимен', 'назван'}
@@ -105,7 +103,6 @@ def get_servings(data: list) -> list:
     # amount_bounding_col       => from right serving_name + width*20% to left serving_sum_name
     # serving_sum_bounding_col  => from right amount_name to right serving_sum_name + width*5%
 
-
     servings: list = []
     serving: dict = {'name': None, 'amount': None, 'sum': None}
     # start iteration from second item after serving_sum
@@ -118,7 +115,6 @@ def get_servings(data: list) -> list:
         if serving['name'] and serving['amount'] and serving['sum']:
             servings.append(serving)
             serving = {'name': None, 'amount': None, 'sum': None}
-
 
         if serving_bounding_col[0] <= box[0][0] and box[1][0] <= serving_bounding_col[1]:
             serving['name'] = text
