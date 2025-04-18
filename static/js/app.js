@@ -14,11 +14,7 @@ const AppData = {
       totalAmount: 5730,
       participants: [],
       names: {},
-      items: [
-        { name:'pos1', price: 1000 },
-        { name:'pos2', price: 1000 },
-        { name:'pos3', price: 1000 }
-      ] // Contains dicts with keys {name: str, price: int}
+      items: [] // Contains dicts with keys {name: str, price: int}
     },
     customNames: true, // Флаг ручного ввода имён
     base64Image: String,

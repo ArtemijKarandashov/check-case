@@ -10,6 +10,7 @@ function initUserName() {
 
 saveUsernameButton.addEventListener('click', function() {
     saveUsernameButton.disabled = true;
+    saveUsernameButton.textContent = 'Подключаемся...';
     const username = usernameInput.value.trim();
     if (username) {
         UserSettings.username = username;
@@ -20,4 +21,8 @@ saveUsernameButton.addEventListener('click', function() {
     socket.emit('login', {
         "name":UserSettings.username
     });
+});
+
+socket.on('login_success',() =>{
+    saveUsernameButton.textContent = 'Подключено!';
 });

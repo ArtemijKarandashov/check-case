@@ -132,8 +132,8 @@ def handle_process_check(data):
     new_thread.join()
 
     total_sum = new_thread.total_sum
+    servings = new_thread.servings
     names = {}  # User_id: Name
-    receipt = {}    # Position: Price
 
     users = _con_manager.get_users_in_session(session_key)
     for user_id in users:
@@ -146,7 +146,7 @@ def handle_process_check(data):
         'message': 'Check processed!',
         "total_sum":total_sum,
         "names":names,
-        "receipt":receipt
+        "servings":servings
         }, room=session['sid'])
 
 
@@ -268,4 +268,9 @@ def handle_update_users_list(data):
 
 @socketio.on('distribution_results')
 def handle_distribution_results(data):
-    pass
+    results = data['results']
+    session_key = data['session_key']
+    users = _con_manager.get_users_in_session(session_key)
+
+    for user in users:
+        emit('my_part',{})

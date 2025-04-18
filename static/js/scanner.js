@@ -24,11 +24,6 @@ function handleReceiptUpload(e) {
 }
 
 function createNewSession(){
-  console.log(UserSettings.username)
-  socket.emit('login',{
-    'name':UserSettings.username
-  });
-
   const requiredPromise = AppLoaded['userLogined'];
   requiredPromise['prom'].then( () => {
     socket.emit('create_session', {

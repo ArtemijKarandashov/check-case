@@ -278,7 +278,7 @@ function initManualDistribution() {
       <select id="owners-${index}" multiple>
         ${AppData.participants
           .filter(p => p.selected)
-          .map(p => `<option value="${p.name}" selected>${p.name}</option>`)
+          .map(p => `<option data-internalid="${p.id}" value="${p.name}" selected>${p.name}</option>`)
           .join('')}
       </select>
     </div>
@@ -292,7 +292,7 @@ function calculateManualShares() {
   
   AppData.receipt.items.forEach((item, index) => {
     const select = document.getElementById(`owners-${index}`);
-    const selectedPeople = Array.from(select.selectedOptions).map(o => o.value);
+    const selectedPeople = Array.from(select.selectedOptions).map(o => o.data-internalid);
     const price = parseFloat(item.price) || 0;
     
     if (selectedPeople.length > 0) {
@@ -305,10 +305,10 @@ function calculateManualShares() {
       });
     }
   });
-
+  
   if (hasSelectedItems) {
-    const results = Object.entries(shares).map(([name, amount]) => ({
-      name: name,
+    const results = Object.entries(shares).map(([data, amount]) => ({
+      id: data,
       amount: amount.toFixed(2)
     }));
 
@@ -331,13 +331,13 @@ function updateResultsUI(results, total) {
   `;
 }
 
-function updateReceiptData() {
+function updateReceiptData(new_item) {
   AppData.receipt = {
     totalAmount: AppData.receipt.totalAmount,
     participants: [...AppData.receipt.participants],
     items: [
       ...AppData.receipt.items,
-      { name: "Кофе", price: 250 }
+      new_item
     ]
   };
   
@@ -479,6 +479,11 @@ function setDistributionData(){
   for (let id in names){
       addCustomParticipant(id, names[id]);
   }
-  updateReceiptData();
+  for (const serving of AppData.servings){
+    for (let i =0; i<serving['amount']; i++){
+      updateReceiptData({ name: serving['name'], price: serving['sum'] });
+    }
+  }
+  AppData.servings = [];
 }
 setDistributionData();

@@ -15,7 +15,8 @@ socket.on('send_session_key', (data) => {
 
 socket.on('current_user_list', (data) =>{
     AppData.names = data['names'];
-    console.log(AppData.names);
+    AppData.servings = data['servings'];
+    console.log(AppData);
     AppLoaded['doneOCR']['prom'].then(()=>{
         setDistributionData();
     });
@@ -25,8 +26,9 @@ socket.on('check_result', function(data) {
     const names =  data['names'];
     const totalAmount = parseFloat(data['total_sum']);
     AppData.names = names;
+    AppData.servings = data['servings'];
     AppData.receipt.totalAmount = totalAmount;
-    
+    console.log(AppData);
     setTimeout(() => {
         AppLoaded['doneOCR']['res']();
     },0);
