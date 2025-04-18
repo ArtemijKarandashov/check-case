@@ -8,8 +8,14 @@ socket.on('my_part', (data)=>{
 });
 
 function showNotification(title, icon, iconColor, contents) {
+    const elementExists = document.getElementById("personalResult");
+    if (!!elementExists){
+      return;
+    }
+
     const notification = document.createElement('div');
     notification.className = 'distribution-notification';
+    notification.id = 'personalResult';
     notification.innerHTML = `
       <div class="notification-content">
         <i class="${icon} notification-icon" style="color: ${iconColor}"></i>

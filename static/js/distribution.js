@@ -417,8 +417,8 @@ function showManualDistributionNotification(results, total) {
   setupNotificationClose(notification);
   
   let resultsToSend = {}
-  for (const user of AppData.participants){
-    resultsToSend[user.id] = user.amount;
+  for (const user of results){
+    resultsToSend[user.name] = user.amount;
   }
   sendResultsToOtherUsers(resultsToSend);
 }
